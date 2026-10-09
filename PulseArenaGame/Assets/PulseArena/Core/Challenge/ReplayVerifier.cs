@@ -46,7 +46,12 @@ namespace PulseArena.Core
                         nameof(taps));
                 }
 
-                session.Advance(tap.PlayTime - session.PlayElapsed);
+                // Rounding can leave PlayElapsed a hair past the tap time. Never move time backwards.
+                double step = tap.PlayTime - session.PlayElapsed;
+                if (step > 0)
+                {
+                    session.Advance(step);
+                }
                 session.TapLane(tap.Lane);
                 previous = tap.PlayTime;
             }
