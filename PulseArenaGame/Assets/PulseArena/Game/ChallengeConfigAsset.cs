@@ -4,7 +4,7 @@ using UnityEngine;
 namespace PulseArena.Game
 {
     /// Designer-editable tuning. Holds no logic: ToConfig() copies the values into the engine-free ChallengeConfig,
-    /// which validates them when a session is created.
+    /// which validates them when a session is created. Float fields are rounded through ConfigValue.FromFloat.
     [CreateAssetMenu(fileName = "ChallengeConfig", menuName = "Pulse Arena/Challenge Config")]
     public sealed class ChallengeConfigAsset : ScriptableObject
     {
@@ -27,12 +27,12 @@ namespace PulseArena.Game
             return new ChallengeConfig
             {
                 Version = _version,
-                CountdownSeconds = _countdownSeconds,
-                DurationSeconds = _durationSeconds,
+                CountdownSeconds = ConfigValue.FromFloat(_countdownSeconds),
+                DurationSeconds = ConfigValue.FromFloat(_durationSeconds),
                 LaneCount = _laneCount,
-                MinSpawnInterval = _minSpawnInterval,
-                MaxSpawnInterval = _maxSpawnInterval,
-                TargetLifetime = _targetLifetime,
+                MinSpawnInterval = ConfigValue.FromFloat(_minSpawnInterval),
+                MaxSpawnInterval = ConfigValue.FromFloat(_maxSpawnInterval),
+                TargetLifetime = ConfigValue.FromFloat(_targetLifetime),
                 Scoring = new ScoringRules
                 {
                     BasePoints = _basePoints,

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using PulseArena.Core;
 using UnityEngine;
 
@@ -13,10 +14,14 @@ namespace PulseArena.Game
         [SerializeField] private float _maxFrameSeconds = 0.1f;
 
         private ChallengeSession _session;
+        private readonly List<TapRecord> _tapLog = new List<TapRecord>();
         private bool _pausedByApp;
         private bool _pausedByFocus;
 
         public ChallengeSession Session => _session;
+
+        /// Accepted taps (Hit or Empty) for the current run, for ReplayVerifier.Verify.
+        public IReadOnlyList<TapRecord> TapLog => _tapLog;
 
         public bool IsPaused => _pausedByApp || _pausedByFocus;
 
@@ -35,7 +40,13 @@ namespace PulseArena.Game
         /// Starts a run. The seed is kept in the result so the same run can be replayed and checked.
         public bool StartRun(ulong seed)
         {
-            return _session != null && _session.Begin(seed);
+            if (_session == null || !_session.Begin(seed))
+            {
+                return false;
+            }
+
+            _tapLog.Clear();
+            return true;
         }
 
         public TapResult Tap(int lane)
@@ -45,7 +56,13 @@ namespace PulseArena.Game
                 return TapResult.Ignored;
             }
 
-            return _session.TapLane(lane);
+            TapResult result = _session.TapLane(lane);
+            if (result.Kind != TapKind.Ignored)
+            {
+                _tapLog.Add(new TapRecord(_session.PlayElapsed, lane));
+            }
+
+            return result;
         }
 
         private void Update()

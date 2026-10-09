@@ -9,7 +9,7 @@ An original, mobile-first arcade challenge: tap the target in its lane before it
 
 | Area | Status |
 |---|---|
-| Core logic: seeded RNG, scoring, combo, state machine, target timeline, session, frame-time clamp | Implemented. **52/52 NUnit tests pass** under `dotnet test` (.NET 8 SDK, C# 9 language level) |
+| Core logic: seeded RNG, scoring, combo, state machine, target timeline, session, frame-time clamp, config rounding, replay verifier | Implemented. **59/59 NUnit tests pass** under `dotnet test` (.NET 8 SDK, C# 9 language level) |
 | Unity adapter (`PulseArena.Game`: controller, config asset) | Written. **Compile-checked only** against UnityEngine stubs (`dotnet build Harness/PulseArena.GameCompile.csproj`). Runtime behaviour in Unity **not verified** |
 | Test suite catches regressions | Checked by injecting a scoring-order bug. One test failed, as expected, and the file was restored |
 | Unity compile of `Assets/PulseArena/**` | **Not verified.** No Unity Editor is available in this environment |
@@ -25,7 +25,8 @@ PulseArenaGame/
     Random/SeededRandom.cs       SplitMix64, same sequence on every platform
     Config/                      ChallengeConfig, ScoringRules (plain data + Validate())
     Scoring/ScoreTracker.cs      Score, combo, hit/miss counters
-    Challenge/                   State machine, target schedule, session, result
+    Challenge/                   State machine, target schedule, session, result, replay verifier
+    Time/FrameTime.cs            Per-frame delta clamp for stalls
   Assets/PulseArena/Game/        Unity adapter (asmdef references Core, engine allowed): ChallengeController, ChallengeConfigAsset
   Assets/PulseArena/Tests/EditMode/   NUnit tests (Unity Test Runner and dotnet test run the same files)
   Harness/                       dotnet test project that compiles Core + tests outside Unity;
@@ -52,6 +53,9 @@ Unity generates `ProjectSettings/`, `Packages/manifest.json` and `.meta` files o
 
 ## Design decisions (current)
 
+- **Replay verification.** `ReplayVerifier.Verify(config, seed, taps)` recomputes a run from its seed and tap log. It checks consistency only. A modified client can still log taps that never happened, so competitive results need server-side validation.
+- **Float tuning.** The Inspector stores floats (Unity serializes floats). `ConfigValue.FromFloat` rounds them so 1.2f becomes 1.2 and matches the code defaults.
+
 - **Deterministic timeline.** `ChallengeSchedule.Generate` builds all targets from the seed before play. Same seed plus same taps gives the same score. This is what makes replays and tests possible, and it is the basis for later tournament verification.
 - **Multiplier read before combo increments.** The hit that reaches a new combo step is still paid at the old multiplier. This is a rule, and it is tested.
 - **Empty taps have no penalty.** Only expired targets count as misses. This avoids punishing mis-taps, at the cost of making spamming a lane safe. A design trade-off to revisit once playtesting starts.
@@ -61,6 +65,7 @@ Unity generates `ProjectSettings/`, `Packages/manifest.json` and `.meta` files o
 
 ## Known gaps (to handle before this is a real game)
 
+- Verification status for each Unity-side item is tracked in `UNITY_VERIFICATION_CHECKLIST.md`.
 - Pause is handled in the adapter, not the core. `ChallengeController` pauses on app pause and focus loss, and clamps each frame delta with `FrameTime.Clamp` (default 0.1 s). This behaviour is unverified in a running Unity player.
 - No scene or UI yet.
 - Tournament simulation, leaderboard, progression, diagnostics and remote configuration are not started.

@@ -207,6 +207,48 @@ namespace PulseArena.Tests
             Assert.AreEqual(TapKind.Ignored, session.TapLane(3).Kind);
         }
 
+        [Test]
+        public void ChunkedAdvance_GivesSameResultAsOneStep()
+        {
+            // Replay verification depends on this: the frame-time split must not change the outcome.
+            ChallengeResult whole = PlayWithSteps(seed: 123, stepSeconds: 0);
+            ChallengeResult chunked = PlayWithSteps(seed: 123, stepSeconds: 0.0137);
+
+            Assert.AreEqual(whole.Score, chunked.Score);
+            Assert.AreEqual(whole.Hits, chunked.Hits);
+            Assert.AreEqual(whole.Misses, chunked.Misses);
+            Assert.AreEqual(whole.BestCombo, chunked.BestCombo);
+        }
+
+        // Plays the scripted run, advancing in steps of stepSeconds between taps (0 means jump straight to each spawn).
+        private static ChallengeResult PlayWithSteps(ulong seed, double stepSeconds)
+        {
+            var session = new ChallengeSession(FixedConfig());
+            session.Begin(seed);
+            session.Advance(2);
+
+            for (int i = 0; i < session.Schedule.Count; i++)
+            {
+                TargetSpec target = session.Schedule[i];
+                double goal = target.SpawnTime + 0.001;
+                if (stepSeconds > 0)
+                {
+                    while (session.PlayElapsed + stepSeconds < goal)
+                    {
+                        session.Advance(stepSeconds);
+                    }
+                }
+                AdvanceTo(session, goal);
+                if (i % 2 == 0)
+                {
+                    session.TapLane(target.Lane);
+                }
+            }
+
+            session.Advance(10);
+            return session.Result;
+        }
+
         // Plays a fixed script (hit even targets, ignore odd ones) and returns the result.
         private static ChallengeResult PlayScripted(ulong seed)
         {
