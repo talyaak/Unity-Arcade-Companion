@@ -4,8 +4,8 @@ An Editor-only UPM package (`com.talyaak.unity-learning-companion`) that reads a
 It finds assemblies, references and C# declarations, labels every claim as **verified** (read from the text) or
 **inferred** (pattern-matched), flags rule breaks, and offers concept notes, missions and interview practice.
 
-> **Status: Milestone 3 (scan and explain) built, Milestone 4 (missions, interview) partly built, Milestone 5 (LLM provider)
-> offline only. Milestone 6 (install into Pulse Arena inside Unity) not done.**
+> **Status: Milestone 3 (scan and explain) and Milestone 4 (missions, interview practice) built in Core and the window.
+> Milestone 5 (LLM provider) offline only. Milestone 6 (install into Pulse Arena inside Unity) not done.**
 > Core is tested with `dotnet test`. The Editor window is compile-checked against stubs. Nothing has run inside Unity.
 
 ## Verified vs. not verified
@@ -19,7 +19,7 @@ It finds assemblies, references and C# declarations, labels every claim as **ver
 | Redaction and payload policy | Implemented and tested. Pattern-based, so it is a last line of defence |
 | Local explainer (offline) | Implemented and tested. No network |
 | Remote LLM provider | **Interface only.** No provider, no key, nothing sent anywhere |
-| Editor window | Written. **Compile-checked against UnityEditor stubs only.** Not opened in Unity |
+| Editor window (scan, explain, missions, interview practice) | Written. **Compile-checked against UnityEditor stubs only.** Not opened in Unity |
 | Unity Test Runner (EditMode) | **Not run.** Asmdef for tests is written from memory and not checked against Unity docs |
 | Refresh | Full rescan on demand. `ScanCache` (hash-based) exists in Core for incremental use later, not wired into the window |
 

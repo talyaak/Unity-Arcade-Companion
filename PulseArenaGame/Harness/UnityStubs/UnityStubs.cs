@@ -30,6 +30,14 @@ namespace UnityEngine
         public static float deltaTime;
     }
 
+    public static class PlayerPrefs
+    {
+        public static bool HasKey(string key) => false;
+        public static string GetString(string key) => string.Empty;
+        public static void SetString(string key, string value) { }
+        public static void Save() { }
+    }
+
     public static class Debug
     {
         public static void LogError(object message, Object context)

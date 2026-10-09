@@ -10,7 +10,7 @@ Unity version under test: _not yet opened_
 - [ ] `PulseArena.Core` compiles with no engine references (asmdef `noEngineReferences: true` is enforced by the compiler)
 - [ ] `PulseArena.Game` compiles against the UnityEngine API (the stub compile only checks the types used)
 - [ ] `com.unity.test-framework` installed and the EditMode test assembly is discovered in Test Runner
-- [ ] EditMode Test Runner: all tests in `Tests/EditMode` pass (currently 59 expected; `dotnet test` also reports 59)
+- [ ] EditMode Test Runner: all tests in `Tests/EditMode` pass (currently 87 expected; `dotnet test` also reports 87)
 - [ ] The test asmdef's references are sufficient for plain `[Test]` discovery in Unity (asmdef is written from memory, not checked against the docs)
 - [ ] `.meta` files for the asmdef and scripts are committed, so GUIDs are stable
 

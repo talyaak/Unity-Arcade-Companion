@@ -12,6 +12,10 @@ namespace UnityLearningCompanion.Shell
         private ScanReport _report;
         private string _question = "What is an asmdef?";
         private string _answer = string.Empty;
+        private string _interviewAnswer = string.Empty;
+        private string _interviewResult = string.Empty;
+        private int _questionIndex;
+        private bool _showMissions;
 
         [MenuItem("Window/Learning Companion")]
         public static void Open()
@@ -44,6 +48,44 @@ namespace UnityLearningCompanion.Shell
             }
 
             GUILayout.Label(_answer);
+
+            if (GUILayout.Button(_showMissions ? "Hide missions" : "Show missions"))
+            {
+                _showMissions = !_showMissions;
+            }
+
+            if (_showMissions && _report != null)
+            {
+                foreach (Mission mission in MissionGenerator.From(_report))
+                {
+                    GUILayout.Label($"- {mission.Prompt}");
+                }
+            }
+
+            DrawInterview();
+        }
+
+        private void DrawInterview()
+        {
+            Question question = Interview.Questions[_questionIndex];
+            GUILayout.Label("Interview practice: " + question.Prompt);
+            _interviewAnswer = GUILayout.TextField(_interviewAnswer);
+
+            if (GUILayout.Button("Check my answer"))
+            {
+                InterviewScore score = Interview.Score(question, _interviewAnswer);
+                _interviewResult = $"Covered {score.Covered.Count}/{question.Rubric.Length}. Not mentioned: " +
+                                   (score.Missing.Count == 0 ? "none" : string.Join(", ", score.Missing));
+            }
+
+            GUILayout.Label(_interviewResult);
+
+            if (GUILayout.Button("Next question"))
+            {
+                _questionIndex = (_questionIndex + 1) % Interview.Questions.Count;
+                _interviewAnswer = string.Empty;
+                _interviewResult = string.Empty;
+            }
         }
 
         private void Scan()

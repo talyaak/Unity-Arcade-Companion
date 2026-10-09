@@ -36,6 +36,35 @@ namespace PulseArena.Core
         public IReadOnlyList<TapRecord> Taps { get; }
     }
 
+    /// The one ranking rule used everywhere: higher score, then higher best combo, then earlier submission, then player id.
+    public sealed class LeaderboardOrder : IComparer<LeaderboardEntry>
+    {
+        public static readonly LeaderboardOrder Instance = new LeaderboardOrder();
+
+        public int Compare(LeaderboardEntry a, LeaderboardEntry b)
+        {
+            int byScore = b.Score.CompareTo(a.Score);
+            if (byScore != 0)
+            {
+                return byScore;
+            }
+
+            int byCombo = b.BestCombo.CompareTo(a.BestCombo);
+            if (byCombo != 0)
+            {
+                return byCombo;
+            }
+
+            int byTime = a.SubmittedAtMillis.CompareTo(b.SubmittedAtMillis);
+            if (byTime != 0)
+            {
+                return byTime;
+            }
+
+            return string.CompareOrdinal(a.PlayerId, b.PlayerId);
+        }
+    }
+
     public sealed class LeaderboardEntry
     {
         public LeaderboardEntry(string playerId, int score, int bestCombo, int hits, int misses, long submittedAtMillis)
@@ -85,12 +114,7 @@ namespace PulseArena.Core
         /// Accepted entries, ranked: score, then best combo, then earlier submission, then player id (ordinal).
         public IReadOnlyList<LeaderboardEntry> Standings()
         {
-            return _entries.Values
-                .OrderByDescending(e => e.Score)
-                .ThenByDescending(e => e.BestCombo)
-                .ThenBy(e => e.SubmittedAtMillis)
-                .ThenBy(e => e.PlayerId, StringComparer.Ordinal)
-                .ToList();
+            return _entries.Values.OrderBy(e => e, LeaderboardOrder.Instance).ToList();
         }
 
         public SubmissionStatus Submit(TournamentSubmission submission)

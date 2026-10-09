@@ -9,7 +9,7 @@ An original, mobile-first arcade challenge: tap the target in its lane before it
 
 | Area | Status |
 |---|---|
-| Core logic: seeded RNG, scoring, combo, state machine, target timeline, session, frame-time clamp, config rounding, replay verifier | Implemented. **59/59 NUnit tests pass** under `dotnet test` (.NET 8 SDK, C# 9 language level) |
+| Core logic: seeded RNG, scoring, combo, state machine, target timeline, session, frame-time clamp, config rounding, replay verifier | Implemented. **87/87 NUnit tests pass** under `dotnet test` (.NET 8 SDK, C# 9 language level) |
 | Unity adapter (`PulseArena.Game`: controller, config asset) | Written. **Compile-checked only** against UnityEngine stubs (`dotnet build Harness/PulseArena.GameCompile.csproj`). Runtime behaviour in Unity **not verified** |
 | Test suite catches regressions | Checked by injecting a scoring-order bug. One test failed, as expected, and the file was restored |
 | Unity compile of `Assets/PulseArena/**` | **Not verified.** No Unity Editor is available in this environment |
