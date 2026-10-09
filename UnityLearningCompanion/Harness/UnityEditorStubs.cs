@@ -10,10 +10,6 @@ namespace UnityEditor
         {
             return new T();
         }
-
-        public virtual void OnGUI()
-        {
-        }
     }
 
     public sealed class MenuItemAttribute : Attribute
