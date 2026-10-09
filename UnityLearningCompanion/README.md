@@ -20,7 +20,7 @@ It finds assemblies, references and C# declarations, labels every claim as **ver
 | Local explainer (offline) | Implemented and tested. No network |
 | Remote LLM provider | **Interface only.** No provider, no key, nothing sent anywhere |
 | Editor window (scan, explain, missions, interview practice) | Written. **Compile-checked against UnityEditor stubs only.** Not opened in Unity |
-| Unity Test Runner (EditMode) | **Not run.** Asmdef for tests is written from memory and not checked against Unity docs |
+| Unity Test Runner (EditMode) | **15/15 pass in Unity 6000.4.0f1** (after `testables`). The two Pulse Arena fixture tests run only under `dotnet test` |
 | Refresh | Full rescan on demand. `ScanCache` (hash-based) exists in Core for incremental use later, not wired into the window |
 
 ## Safety rules (enforced in code where possible)
@@ -56,7 +56,8 @@ dotnet test UnityLearningCompanion.Tests.csproj          # 17 tests
 dotnet build UnityLearningCompanion.ShellCompile.csproj  # window compiles for net8.0 and netstandard2.1
 ```
 
-The PulseArena-based tests look for `PulseArenaGame/` next to the repo and skip if it is missing.
+The two tests that read the real Pulse Arena project live in `CompanionHarness/PulseArenaFixtureTests.cs`. They are dotnet-only, because Unity can't read that folder from the package and would skip them.
+Unity Test Runner shows 15 Companion tests. `dotnet test` runs 17.
 
 ## Install (verified in Unity: Core and Editor compile, window opens)
 
