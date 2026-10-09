@@ -23,7 +23,7 @@ namespace UnityLearningCompanion.Shell
             GetWindow<LearningCompanionWindow>("Learning Companion");
         }
 
-        private void OnGUI()
+        public override void OnGUI()
         {
             GUILayout.Label("Read-only. Nothing is written to your project.");
 
