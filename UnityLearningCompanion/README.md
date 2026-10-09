@@ -45,20 +45,35 @@ UnityLearningCompanion/
     ScanCache.cs                                           change detection (not wired yet)
   Editor/Shell/                      Thin EditorWindow (Window > Learning Companion)
   Tests/Editor/                      NUnit tests (Unity Test Runner and dotnet test)
-  Harness/                           dotnet test project; ShellCompile.csproj compile-checks the window against stubs
+  (../CompanionHarness/)             dotnet projects at repo root, outside the package, so Unity never imports their bin/obj
 ```
 
 ## Run the tests (no Unity needed)
 
 ```bash
-cd UnityLearningCompanion/Harness
+cd CompanionHarness
 dotnet test UnityLearningCompanion.Tests.csproj          # 17 tests
 dotnet build UnityLearningCompanion.ShellCompile.csproj  # window compiles for net8.0 and netstandard2.1
 ```
 
 The PulseArena-based tests look for `PulseArenaGame/` next to the repo and skip if it is missing.
 
-## Install (not yet verified)
+## Install (verified in Unity: Core and Editor compile, window opens)
+
+Unity 6000.4.0f1 was used. The Pulse Arena project is the test host.
+
+**Test discovery needs one extra step.** A package added from disk does not show its tests in Test Runner unless the
+project lists it under `testables`. To run the Companion's 17 EditMode tests, temporarily add this to the project's
+`Packages/manifest.json` (path is relative to `Packages/`):
+
+```json
+"com.talyaak.unity-learning-companion": "file:../../UnityLearningCompanion",
+...
+"testables": [ "com.talyaak.unity-learning-companion" ]
+```
+
+Do not commit this change to the Pulse Arena manifest unless you want the Editor tool as a permanent dependency.
+Status: **not yet verified** that this makes the Companion tests appear.
 
 Add the package from disk in Unity: Package Manager → Add package from disk → select `UnityLearningCompanion/package.json`.
 Then open Window → Learning Companion. Check the Console for errors on first import; Unity will generate `.meta` files.

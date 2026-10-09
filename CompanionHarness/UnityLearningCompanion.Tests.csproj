@@ -15,8 +15,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="../Editor/Core/**/*.cs" Link="Core/%(RecursiveDir)%(Filename)%(Extension)" />
-    <Compile Include="../Tests/Editor/**/*.cs" Link="Tests/%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="../UnityLearningCompanion/Editor/Core/**/*.cs" Link="Core/%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="../UnityLearningCompanion/Tests/Editor/**/*.cs" Link="Tests/%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
 
   <ItemGroup>

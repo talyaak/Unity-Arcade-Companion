@@ -14,8 +14,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="../Editor/Core/**/*.cs" Link="Core/%(RecursiveDir)%(Filename)%(Extension)" />
-    <Compile Include="../Editor/Shell/**/*.cs" Link="Shell/%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="../UnityLearningCompanion/Editor/Core/**/*.cs" Link="Core/%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="../UnityLearningCompanion/Editor/Shell/**/*.cs" Link="Shell/%(RecursiveDir)%(Filename)%(Extension)" />
     <Compile Include="UnityEditorStubs.cs" />
   </ItemGroup>
 
