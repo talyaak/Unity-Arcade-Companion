@@ -1,0 +1,16 @@
+{
+    "name": "PulseArena.Game",
+    "rootNamespace": "PulseArena.Game",
+    "references": [
+        "PulseArena.Core"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
