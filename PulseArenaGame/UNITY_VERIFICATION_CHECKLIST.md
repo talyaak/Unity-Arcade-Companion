@@ -22,12 +22,15 @@ Unity version under test: _not yet opened_
 - [ ] `ChallengeConfigAsset` values set in the Inspector produce the same `ChallengeConfig` as the code defaults (covered by `ConfigValueTests`, but only the rounding helper is tested, not the asset)
 - [ ] `TapLog` matches the tap sequence seen in play, and `ReplayVerifier.Verify` on that log reproduces the on-screen score
 
-## Playable scene (written, not yet run in Unity)
-- [ ] Menu Pulse Arena > Build Challenge Scene runs without errors; creates `Assets/PulseArena/Config/DefaultChallenge.asset` and `Assets/PulseArena/Scenes/Challenge.unity`; adds the scene to Build Settings
-- [ ] Play the scene: Start shows a countdown, then targets appear in lanes; tapping a live lane scores; the run ends at the duration
-- [ ] Results panel shows score, hits, misses, best combo, accuracy and seed; "Replay check: OK" appears (replay matches live score)
-- [ ] Replay starts a new run with a new seed; Menu returns to the start screen
-- [ ] Quit during a run returns to the start screen with no errors
+## Playable scene (verified in Unity 6000.4.0f1, Play Mode, Editor)
+- [x] Menu Pulse Arena > Build Challenge Scene runs without errors, twice, with one Build Settings entry; creates the config asset and scene
+- [x] Start shows a countdown, then targets appear in lanes; tapping a live lane scores; the run ends at the duration
+- [x] Results panel shows score, hits, misses, best combo, accuracy and seed; "Replay check: OK" appears
+- [x] Replay starts a new run with a new seed; Menu on the results panel returns to the start screen (fixed in ae32a9a)
+- [x] Quit during a run returns to the start screen with no lit lanes (fixed in cbfa6e2)
+- [x] Pause: the status line shows "(paused)" and the timer stops
+- [x] Scoring: +100 per hit at x1; -50 per miss, floored at 0; combo rises (best combo 5 in one run) and reads 0 after each miss
+- [ ] Multiplier step in Unity: x2 at combo 5 and +200 on the 6th hit. **Not verified in Unity.** Covered by Core tests (`MultiplierFor_StepsAtComboBoundaries`, `Hit_UsesMultiplierBeforeComboIncreases`). The asset-to-config mapping was checked by reading the code, not by a test. No run has yet reached combo 5 with a further hit.
 
 ## Platform and performance (device-gated, not started)
 - [ ] Runs on a real Android or iOS device at target frame rate (no measurement exists yet)
