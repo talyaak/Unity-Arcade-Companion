@@ -1,0 +1,36 @@
+GC Alloc per frame, standalone Windows Development build (PulseArenaGame, Unity 6000.4.0f1, Match scene only).
+Build Settings were not changed: the build was made with an explicit scene list. The output is git-ignored (PulseArenaGame/Builds/StandaloneGc/). No binaries are committed.
+Probe: docs/evidence/T3/probe/StandaloneGcProbe.cs. A temporary harness, built into the player from Assets/Temp and removed from Assets afterwards.
+Raw data: docs/evidence/T3/gc-standalone-frames.csv (one record per frame: frame, dt in ms, the frame's GC Allocated In Frame bytes, action flags).
+
+METHOD
+  ProfilerRecorder "GC Allocated In Frame" (category Memory), read once per frame. Each record holds the allocation of the frame before it, tagged with what the probe did in that frame.
+  Greedy bot: one tap every 0.5 s of game time (the D7 pacing), timeScale 1, 8,999 frames, 381 taps through stages 1 to 5.
+  Flags: 1 tap, 2 stage start or retry, 4 win or loss, 8 tile check after a win.
+
+RESULTS, HUD on, final build
+  Idle (no action, and no tap in the 20 frames before): n=1,036. Median 0 B, p90 0 B, p99 0 B. One frame over 50 KB: the first frame, 2,354,569 B (scene start).
+  Animation (no action, within 20 frames after a tap): n=7,570. Median 0 B, p90 0 B, p99 390 B (the frame right after a tap). Six frames over 50 KB (the spikes below).
+  Tap frames: n=369. Median 2,692 B, p90 4,950 B, p99 5,886 B, max 10,744 B. None over 50 KB.
+  The frame after a tap: n=381. Median 390 B, p90 394 B. Six frames over 50 KB.
+  Frame time: median 16.8 ms, p90 33.3 ms.
+
+RESULTS, HUD off (same build, -probe-gc-nohud)
+  The frame after a tap: median 0 B, p90 0 B, max 29,934 B. Other frames: median 0 B, p90 0 B, p99 3,306 B, max 35,290 B.
+  No frame over 50 KB in 8,999 frames.
+
+THE SPIKES
+  Six frames at 593 KB to 1.47 MB, each one frame after a tap (frames 58, 89, 145, 174, 204, 298). None after frame 298.
+  Ruled out: popup glyph generation (pre-warming the popup text changed nothing), tile material creation (creating all 14 materials at start changed nothing), and the kind of tap (moved, cleared and game-ending taps all show them).
+  Found: with the HUD component disabled, there are no spikes and the 390 B follow-up disappears. So the spikes and the per-tap allocation come from the HUD. Its UI Toolkit labels change on almost every tap (Tray and Left).
+  Not found: the allocation inside UI Toolkit. A Unity Profiler deep profile would show it. It is not available through these tools.
+
+BUGS FOUND BY THIS MEASUREMENT AND FIXED
+  1. The standalone build threw ArgumentNullException in MatchEffects.Awake at every level start. Shader.Find("Particles/Standard Unlit") returns null in a player unless the shader is in the build. The exception stopped Awake before ParticleSystem.Play(). Fix: no custom material when the shader is missing, so the renderer keeps its default particle material. The idle median went from 766 B to 0 B. The mechanism is not isolated; the before and after are measured.
+  2. Before that fix, a control run (-probe-iso, no taps) showed 766 B per frame in every phase, including with every match component and the camera disabled. That is why the component search found nothing.
+  3. Popup glyphs and tile materials are now created once at start. Neither changed the spikes. They are kept as a safety measure.
+
+WHAT THIS MEANS FOR THE TARGET (0 B per frame during Playing, after warm-up)
+  Met for steady idle and animation frames (median and p90 are 0 B).
+  Not met on the frame after each tap (about 390 B, from the HUD) or on the six spike frames (593 KB to 1.47 MB, also the HUD).
+  Open question for the architect: accept the HUD's per-tap work as event work, or change the HUD to a non-allocating path (this revisits D6). Android device numbers (T7) are still needed.

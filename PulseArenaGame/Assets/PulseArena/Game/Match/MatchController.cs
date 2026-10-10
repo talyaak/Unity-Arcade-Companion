@@ -126,6 +126,16 @@ namespace PulseArena.Game
             _camera = Camera.main;
             _effects = new GameObject("Match effects").AddComponent<MatchEffects>();
             _popupView = new GameObject("Match popup").AddComponent<MatchPopup>();
+
+            // Create every shared material now. A material is made the first time a state needs it, and that first
+            // creation is the expensive frame (measured in the standalone build, T5 notes). Doing it here keeps it out of play.
+            for (int symbol = 0; symbol < Palette.Length; symbol++)
+            {
+                MaterialFor(symbol, dimmed: false);
+                MaterialFor(symbol, dimmed: true);
+            }
+
+            _ = RedMaterial;
             StartLevel(_stageIndex, (ulong)DateTime.UtcNow.Ticks);
         }
 

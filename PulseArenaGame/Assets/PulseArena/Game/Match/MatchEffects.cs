@@ -77,10 +77,15 @@ namespace PulseArena.Game
                 shader = Shader.Find("Legacy Shaders/Particles/Alpha Blended");
             }
 
-            _material = new Material(shader);
+            // A player only has the shader if the build includes it. Without it, the renderer keeps its default particle
+            // material, so the match still plays and nothing throws at the start of a level.
             ParticleSystemRenderer particleRenderer = GetComponent<ParticleSystemRenderer>();
             particleRenderer.renderMode = ParticleSystemRenderMode.Billboard;
-            particleRenderer.sharedMaterial = _material;
+            if (shader != null)
+            {
+                _material = new Material(shader);
+                particleRenderer.sharedMaterial = _material;
+            }
 
             _system.Play();
         }

@@ -110,8 +110,13 @@ Game view only advances while the Editor is the active window; `Application.runI
 - [x] Loss: tray red flash 0.301 s, drop 0.500 units in 0.498 s (design 0.3 s, 0.5 units). **Deviation:** the fade is a shrink to zero, not an alpha fade (no transparent material). Screenshot `loss-flash.png`
 - [x] Last-slot triple in the scene: tray 6 to 4 on a triple, state Playing, no loss (`last-slot-triple.txt`)
 - [x] Reduce Motion on: no shake (peak 0.000), no hit-stop (0.006 s), no confetti (0 on a win); the red flash stays (0.153 s). **Not confirmed:** the camera nudge under Reduce Motion (the combo reached in that run was not logged)
-- [ ] GC Alloc 0 B per frame during Playing. **Not met in the Editor:** the steady baseline is 9,013 B per frame with every match component disabled too. The match code adds none in idle or animation (`gc-profiler.txt`). A standalone build or device run is needed for 0 B
+- [ ] GC Alloc 0 B per frame during Playing (standalone Development build, `docs/evidence/T3/gc-standalone.txt`). **Partly met:** idle and animation frames are 0 B at the median and p90. **Not met:** the frame after each tap is about 390 B, and six spike frames are 593 KB to 1.47 MB. With the HUD off, no frame is over 50 KB, so the HUD's UI Toolkit label updates cause both. The architect decides whether that counts as event work (D11)
 - [ ] Tap squash (0.12 s, to 0.9 and back). **Not measured**
 - [ ] Shared materials only: the red material is shared; a material count across T3 taps was not re-measured
 - [ ] Touch on a device (T7). Feel (playtest, T5). Audio hooks are silent by design (`AudioCues`)
 - [ ] Framing at FramingMargin 1.10: all points inside at 16:9 and 9:16, margins 4.5% (bottom, 16:9) and 4.9% (sides, 9:16) (`docs/evidence/T2/framing-margin110.txt`). **Note:** the popup can sit under the bottom Reduce Motion button at 1280 x 720 (`popup-over-tray.png`)
+
+## Playtest (T5; bot runs only, `docs/playtests/2026-10-11.md`)
+- [x] Bots play stages 1 to 5 in a standalone build: 500 games (greedy and uniform, seeds 1 to 50). Every win rate is inside its D7 band
+- [x] No tile stays on screen after a win: checked 1 s of game time after each of the 327 wins
+- [ ] Human playtest. **Not done:** every run above is a bot run. Blocked-tap feedback, popup readability and the confusing moments in the log need a person

@@ -30,6 +30,9 @@ namespace PulseArena.Game
             _text.anchor = TextAnchor.MiddleCenter;
             _text.alignment = TextAlignment.Center;
             _text.color = new Color(Ink.r, Ink.g, Ink.b, 0f);
+
+            // Set every glyph the popups use once, now, so the first real popups do not stall the frame that shows them.
+            _text.text = "+0123456789";
         }
 
         /// Shows the message above a position, facing the camera.
