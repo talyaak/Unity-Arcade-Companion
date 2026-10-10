@@ -108,6 +108,12 @@ namespace PulseArena.Core
                 return false;
             }
 
+            // Drop live targets, so a view that reads HasLiveTarget never shows a quit run's targets.
+            for (int lane = 0; lane < _laneTarget.Length; lane++)
+            {
+                _laneTarget[lane] = -1;
+            }
+
             State = next;
             return true;
         }

@@ -187,6 +187,25 @@ namespace PulseArena.Tests
         }
 
         [Test]
+        public void Quit_ClearsLiveTargets()
+        {
+            var session = new ChallengeSession(FixedConfig());
+            session.Begin(42);
+            session.Advance(2);
+            TargetSpec first = session.Schedule[0];
+            AdvanceTo(session, first.SpawnTime + 0.001);
+            Assert.IsTrue(session.HasLiveTarget(first.Lane), "precondition: a target is live");
+
+            session.Quit();
+
+            Assert.AreEqual(ChallengeState.Idle, session.State);
+            for (int lane = 0; lane < 3; lane++)
+            {
+                Assert.IsFalse(session.HasLiveTarget(lane), $"lane {lane} still shows a target after quit");
+            }
+        }
+
+        [Test]
         public void Advance_RejectsNegativeOrNaN()
         {
             var session = new ChallengeSession(FixedConfig());
