@@ -1,5 +1,17 @@
 # Pulse Arena
 
+**Current MVP direction: an original triple-match game (3D tiles, tray, triple clears).** See `docs/MATCH_MVP.md`.
+The earlier one-tap challenge game is kept as a prototype, with its own scene and tests.
+
+## Match MVP (new)
+
+| Area | Status |
+|---|---|
+| Core match module: board, tray, triples, scoring, combo, generator, replay, simulator | Built. **107/107 dotnet tests pass** (includes challenge tests) |
+| Match view: `MatchController`, `TileView`; scene builder "Pulse Arena > Build Match Scene" | Written. **Compile-checked against stubs only; not run in Unity** |
+| Feel and touch | **Not verified** |
+
+
 An original, mobile-first arcade challenge: tap the target in its lane before it expires, build combos, finish the run, replay.
 
 > **Status: Milestone 1 (in progress).** The engine-free core is tested with `dotnet test`. The thin Unity adapter (`ChallengeController`, `ChallengeConfigAsset`) is written and compile-checked against UnityEngine stubs.

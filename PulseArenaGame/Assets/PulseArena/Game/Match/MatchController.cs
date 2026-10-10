@@ -1,0 +1,293 @@
+using System;
+using System.Collections.Generic;
+using PulseArena.Core;
+using UnityEngine;
+
+namespace PulseArena.Game
+{
+    /// Runs one match level in the scene. It builds 3D tiles from Core's level, sends taps to Core, and plays back what Core
+    /// reports. It never decides blocking or matches. Core is the only source of truth for what is free and what clears.
+    public sealed class MatchController : MonoBehaviour
+    {
+        private const float CellSpacing = 1.15f;
+        private const float TileHeight = 0.95f;
+        private const float TraySpacing = 1.0f;
+        private const float TrayY = 0.5f;
+        private const float TrayZ = -4.6f;
+        private const float MaxFrameSeconds = 0.1f;
+        private const float PopupSeconds = 0.9f;
+        private const float DimmedBrightness = 0.45f;
+
+        // Original palette and shapes for this game. Symbols beyond these lists cycle through them.
+        private static readonly Color[] Palette =
+        {
+            new Color(0.95f, 0.45f, 0.35f, 1f),
+            new Color(0.25f, 0.75f, 0.72f, 1f),
+            new Color(0.97f, 0.80f, 0.35f, 1f),
+            new Color(0.62f, 0.45f, 0.92f, 1f),
+            new Color(0.55f, 0.85f, 0.45f, 1f),
+            new Color(0.45f, 0.68f, 0.95f, 1f),
+            new Color(0.95f, 0.55f, 0.75f, 1f)
+        };
+
+        private static readonly PrimitiveType[] Shapes =
+        {
+            PrimitiveType.Cube,
+            PrimitiveType.Sphere,
+            PrimitiveType.Cylinder,
+            PrimitiveType.Capsule
+        };
+
+        [SerializeField] private int _stageIndex;
+
+        private readonly MatchRules _rules = new MatchRules();
+        private readonly Dictionary<int, TileView> _views = new Dictionary<int, TileView>();
+        private MatchLevelSpec _spec;
+        private MatchBoard _board;
+        private double _clock;
+        private string _popup = string.Empty;
+        private float _popupLeft;
+
+        public MatchBoard Board => _board;
+
+        private void Start()
+        {
+            StartLevel(_stageIndex, (ulong)DateTime.UtcNow.Ticks);
+        }
+
+        public void StartLevel(int stageIndex, ulong seed)
+        {
+            if (stageIndex < 0 || stageIndex >= MatchStages.All.Count)
+            {
+                throw new ArgumentOutOfRangeException(nameof(stageIndex));
+            }
+
+            ClearViews();
+            _stageIndex = stageIndex;
+            _spec = MatchStages.All[stageIndex];
+            _clock = 0;
+            _popup = string.Empty;
+            _popupLeft = 0f;
+
+            MatchLevel level = MatchLevelGenerator.Generate(_spec, seed);
+            _board = new MatchBoard(level.Tiles, _rules);
+            foreach (MatchTile tile in level.Tiles)
+            {
+                CreateView(tile);
+            }
+
+            LayoutBoard();
+            RefreshTints();
+        }
+
+        /// Sends one tap to Core. Returns Core's answer, or null when there is no level.
+        public MatchStep Tap(int tileId)
+        {
+            if (_board == null)
+            {
+                return null;
+            }
+
+            // Note the tray's tiles of this symbol before the tap, so a clear can animate all three.
+            var sameSymbolInTray = new List<int>();
+            if (_board.TryGetOnBoard(tileId, out MatchTile tapped))
+            {
+                foreach (MatchTile inTray in _board.Tray)
+                {
+                    if (inTray.Symbol == tapped.Symbol)
+                    {
+                        sameSymbolInTray.Add(inTray.Id);
+                    }
+                }
+            }
+
+            MatchStep step = _board.TapTile(tileId, _clock);
+
+            if (step.Outcome == MatchOutcome.Blocked && _views.TryGetValue(tileId, out TileView blocked))
+            {
+                blocked.Shake();
+            }
+
+            if (step.Outcome == MatchOutcome.Moved || step.Outcome == MatchOutcome.Cleared
+                || step.Outcome == MatchOutcome.Won || step.Outcome == MatchOutcome.Lost)
+            {
+                LayoutBoard();
+            }
+
+            foreach (MatchEvent e in step.Events)
+            {
+                if (e.Kind == MatchEventKind.Cleared)
+                {
+                    sameSymbolInTray.Add(tileId);
+                    foreach (int id in sameSymbolInTray)
+                    {
+                        if (_views.TryGetValue(id, out TileView vanishing))
+                        {
+                            vanishing.Vanish();
+                            _views.Remove(id);
+                        }
+                    }
+
+                    _popup = $"+{e.Points}";
+                    _popupLeft = PopupSeconds;
+                }
+            }
+
+            RefreshTints();
+            return step;
+        }
+
+        private void Update()
+        {
+            if (_board != null && _board.State == MatchState.Playing)
+            {
+                _clock += FrameTime.Clamp(Time.deltaTime, MaxFrameSeconds);
+            }
+
+            if (_popupLeft > 0f)
+            {
+                _popupLeft -= Time.deltaTime;
+            }
+
+            if (Input.GetMouseButtonDown(0) && Camera.main != null)
+            {
+                Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+                if (Physics.Raycast(ray, out RaycastHit hit))
+                {
+                    TileView view = hit.collider.GetComponent<TileView>();
+                    if (view != null)
+                    {
+                        Tap(view.TileId);
+                    }
+                }
+            }
+        }
+
+        private void OnGUI()
+        {
+            if (_board == null)
+            {
+                return;
+            }
+
+            float width = Screen.width;
+            float height = Screen.height;
+            GUI.Label(new Rect(16f, 16f, width - 32f, 40f),
+                $"Stage {_stageIndex + 1}   Score {_board.Score}   Combo {_board.Combo}   " +
+                $"Tray {_board.Tray.Count}/{_rules.TrayCapacity}   Left {_board.RemainingOnBoard}");
+
+            if (_popupLeft > 0f)
+            {
+                GUI.Label(new Rect(16f, 56f, width - 32f, 40f), _popup);
+            }
+
+            var center = new Rect((width - 240f) / 2f, height * 0.8f, 240f, 60f);
+            if (_board.State == MatchState.Won)
+            {
+                GUI.Label(new Rect(16f, height * 0.5f, width - 32f, 40f), "Level cleared");
+                if (GUI.Button(center, "Next stage"))
+                {
+                    StartLevel((_stageIndex + 1) % MatchStages.All.Count, (ulong)DateTime.UtcNow.Ticks);
+                }
+            }
+            else if (_board.State == MatchState.Lost)
+            {
+                GUI.Label(new Rect(16f, height * 0.5f, width - 32f, 40f), "Tray full");
+                if (GUI.Button(center, "Retry"))
+                {
+                    StartLevel(_stageIndex, (ulong)DateTime.UtcNow.Ticks);
+                }
+            }
+        }
+
+        private void CreateView(MatchTile tile)
+        {
+            GameObject go = GameObject.CreatePrimitive(Shapes[tile.Symbol % Shapes.Length]);
+            go.name = "Tile " + tile.Id;
+            TileView view = go.AddComponent<TileView>();
+            view.Init(tile.Id, BoardPosition(tile.X, tile.Y, 0));
+            view.SetTint(Palette[tile.Symbol % Palette.Length]);
+            _views.Add(tile.Id, view);
+        }
+
+        private void ClearViews()
+        {
+            foreach (TileView view in _views.Values)
+            {
+                Destroy(view.gameObject);
+            }
+
+            _views.Clear();
+        }
+
+        // Board tiles go to their stack position, and tray tiles go to their slots. Heights come from the tiles that
+        // remain in each cell, so a stack settles when the tiles above it leave.
+        private void LayoutBoard()
+        {
+            var stacks = new Dictionary<(int, int), List<MatchTile>>();
+            foreach (KeyValuePair<int, TileView> pair in _views)
+            {
+                if (!_board.TryGetOnBoard(pair.Key, out MatchTile tile))
+                {
+                    continue;
+                }
+
+                var cell = (tile.X, tile.Y);
+                if (!stacks.TryGetValue(cell, out List<MatchTile> stack))
+                {
+                    stack = new List<MatchTile>();
+                    stacks[cell] = stack;
+                }
+
+                stack.Add(tile);
+            }
+
+            foreach (List<MatchTile> stack in stacks.Values)
+            {
+                stack.Sort((a, b) => a.Layer.CompareTo(b.Layer));
+                for (int height = 0; height < stack.Count; height++)
+                {
+                    _views[stack[height].Id].SetTarget(BoardPosition(stack[height].X, stack[height].Y, height));
+                }
+            }
+
+            for (int i = 0; i < _board.Tray.Count; i++)
+            {
+                _views[_board.Tray[i].Id].SetTarget(TraySlot(i));
+            }
+        }
+
+        // Tiles on top are full brightness. Covered tiles are dimmed, so the picture shows what is tappable.
+        private void RefreshTints()
+        {
+            foreach (KeyValuePair<int, TileView> pair in _views)
+            {
+                if (!_board.TryGetOnBoard(pair.Key, out MatchTile tile))
+                {
+                    continue;
+                }
+
+                Color color = Palette[tile.Symbol % Palette.Length];
+                if (!_board.IsFree(tile.Id))
+                {
+                    color = new Color(color.r * DimmedBrightness, color.g * DimmedBrightness, color.b * DimmedBrightness, 1f);
+                }
+
+                pair.Value.SetTint(color);
+            }
+        }
+
+        private Vector3 BoardPosition(int x, int y, int height)
+        {
+            float centerX = (_spec.GridWidth - 1) * 0.5f;
+            float centerZ = (_spec.GridHeight - 1) * 0.5f;
+            return new Vector3((x - centerX) * CellSpacing, TileHeight * 0.5f + height * TileHeight, (y - centerZ) * CellSpacing);
+        }
+
+        private Vector3 TraySlot(int index)
+        {
+            float offset = (_rules.TrayCapacity - 1) * 0.5f;
+            return new Vector3((index - offset) * TraySpacing, TrayY, TrayZ);
+        }
+    }
+}

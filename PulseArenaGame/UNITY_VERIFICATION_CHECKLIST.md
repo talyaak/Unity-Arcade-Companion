@@ -42,3 +42,15 @@ Unity version under test: _not yet opened_
 - [ ] Scene, UI, input wiring (touch or mouse → `Tap(lane)`)
 - [ ] Tournament simulation, local leaderboard, progression, diagnostics, config versioning and feature flags
 - [ ] Companion package (`UnityLearningCompanion/`), including its Editor-only assemblies and LLM provider abstraction
+
+## Match MVP (new, not yet run in Unity)
+- [ ] Menu Pulse Arena > Build Match Scene runs without errors and adds `Assets/PulseArena/Scenes/Match.unity` to Build Settings
+- [ ] Play: the board shows 3D tiles, stacked by cell, with covered tiles dimmed and free tiles bright
+- [ ] Tapping a free tile moves it to the tray in about 0.25 s; the tray lays out in order
+- [ ] Tapping a covered tile shakes it and changes nothing else
+- [ ] Three of a kind clear, with a `+points` popup and the combo shown in the HUD
+- [ ] A tile that completes a triple in the last tray slot clears (no loss)
+- [ ] Filling the tray without a triple shows "Tray full" with a Retry button that works
+- [ ] Clearing the board shows "Level cleared" with a Next stage button that works
+- [ ] Touch on a real device behaves like mouse (deferred)
+- [ ] Feel criteria in `docs/MATCH_MVP.md` judged by a person (not automatable)
