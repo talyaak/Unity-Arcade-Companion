@@ -34,7 +34,7 @@ Unity version under test: _not yet opened_
 
 ## Match scene framing and light (T2; Unity 6000.4.0f1, Play Mode, Editor; evidence in docs/evidence/T2/)
 - [x] Pulse Arena > Build Match Scene leaves exactly one directional light (soft shadows, rotation 50, -30, 0), read back with `FindObjectsByType<Light>()`
-- [x] Stage 5 (6x6, stack height 5, 7-slot tray row, popup headroom): all 8 corners of the content box project inside the viewport at 16:9 and 9:16 (`framing.txt`)
+- [x] Stage 5 with three tiles in the tray (6x6, stack height 5, 7-slot tray row, popup headroom): every projected content point and every tray slot corner is inside the viewport at 16:9 and 9:16 (`framing.txt`). Content fills 46% of the width at 16:9 and 88% at 9:16; at 16:9 it is limited by height
 - [x] Render pipeline is Built-in (`graphics-settings.txt`)
 - [ ] Popup and HUD framing. **Not verified.** Render-texture captures do not include IMGUI; waits for T4 (HUD) and T3 (world-space popup).
 - [ ] Framing on a real window resize (`Update` refit when Screen size changes). **Not verified**; only `FitCamera` with a forced aspect was run.

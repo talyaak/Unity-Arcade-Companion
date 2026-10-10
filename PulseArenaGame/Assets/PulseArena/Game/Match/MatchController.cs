@@ -60,6 +60,7 @@ namespace PulseArena.Game
         private int _maxStack;
         private int _fitWidth;
         private int _fitHeight;
+        private readonly List<Vector3> _fitPoints = new List<Vector3>();
 
         public MatchBoard Board => _board;
 
@@ -98,6 +99,7 @@ namespace PulseArena.Game
             }
 
             _maxStack = MaxStackHeight(level.Tiles);
+            BuildFitPoints(level.Tiles);
             LayoutBoard();
             RefreshTints();
             FitCamera();
@@ -201,11 +203,11 @@ namespace PulseArena.Game
             }
         }
 
-        // Keeps the board, tray and popup room on screen at any aspect ratio. The content's bounding sphere must fit inside
-        // the narrower of the vertical and horizontal fields of view. Only the distance changes; the camera's pitch stays.
+        // Keeps the board, tray and popup room on screen at any aspect ratio. The camera fits the real content points, not a
+        // box around them, so the board takes as much of the frame as the content allows. Only the distance changes.
         private void FitCamera()
         {
-            if (_camera == null || _spec == null)
+            if (_camera == null || _fitPoints.Count == 0)
             {
                 return;
             }
@@ -213,40 +215,67 @@ namespace PulseArena.Game
             _fitWidth = Screen.width;
             _fitHeight = Screen.height;
 
-            float halfBoardX = (_spec.GridWidth - 1) * 0.5f * CellSpacing + TileRadius;
-            float halfBoardZ = (_spec.GridHeight - 1) * 0.5f * CellSpacing + TileRadius;
-            float halfTrayX = (_rules.TrayCapacity - 1) * 0.5f * TraySpacing + TileRadius;
-            float halfX = Mathf.Max(halfBoardX, halfTrayX);
-            float minZ = Mathf.Min(-halfBoardZ, TrayZ - TileRadius);
-            float maxZ = Mathf.Max(halfBoardZ, TrayZ + TileRadius);
-            float maxY = _maxStack * TileHeight + TileHalfHeight + PopupHeadroom;
+            Vector3 min = _fitPoints[0];
+            Vector3 max = _fitPoints[0];
+            foreach (Vector3 p in _fitPoints)
+            {
+                min = new Vector3(Mathf.Min(min.x, p.x), Mathf.Min(min.y, p.y), Mathf.Min(min.z, p.z));
+                max = new Vector3(Mathf.Max(max.x, p.x), Mathf.Max(max.y, p.y), Mathf.Max(max.z, p.z));
+            }
 
-            var min = new Vector3(-halfX, -TileHalfHeight, minZ);
-            var max = new Vector3(halfX, maxY, maxZ);
             Vector3 center = (min + max) * 0.5f;
-
-            // Place the camera on its own view axis so that all eight corners of the content box fit in the frustum.
-            // For a corner at (right, up, ahead) from the content centre, the camera distance d must satisfy
-            // |right| / (d + ahead) <= tan(halfH) and |up| / (d + ahead) <= tan(halfV).
             float tanV = Mathf.Tan(_camera.fieldOfView * Mathf.Deg2Rad * 0.5f);
             float tanH = tanV * _camera.aspect;
             Vector3 right = _camera.transform.right;
             Vector3 up = _camera.transform.up;
             Vector3 forward = _camera.transform.forward;
+
+            // The camera sits at distance d behind the centre on its own view axis. A point at offset rel from the centre is
+            // inside the frustum when its sideways and vertical offsets, divided by the tangent of the half field, do not
+            // exceed its depth (its forward offset plus d). Take the smallest d that holds for every point.
             float distance = 0f;
-            for (int i = 0; i < 8; i++)
+            foreach (Vector3 p in _fitPoints)
             {
-                var corner = new Vector3(
-                    (i & 1) == 0 ? min.x : max.x,
-                    (i & 2) == 0 ? min.y : max.y,
-                    (i & 4) == 0 ? min.z : max.z) - center;
-                float ahead = Dot(corner, forward);
-                float needH = Mathf.Abs(Dot(corner, right)) / tanH - ahead;
-                float needV = Mathf.Abs(Dot(corner, up)) / tanV - ahead;
-                distance = Mathf.Max(distance, Mathf.Max(needH, needV));
+                Vector3 rel = p - center;
+                float ahead = Dot(rel, forward);
+                distance = Mathf.Max(distance, Mathf.Abs(Dot(rel, right)) / tanH - ahead);
+                distance = Mathf.Max(distance, Mathf.Abs(Dot(rel, up)) / tanV - ahead);
             }
 
             _camera.transform.position = center - forward * (distance * FramingMargin);
+        }
+
+        // Points the camera must keep on screen: every tile's corners at its layout position, every tray slot, and a point
+        // above the tallest stack for the popup. Filled once per level, so a window resize refits without allocating.
+        private void BuildFitPoints(IEnumerable<MatchTile> tiles)
+        {
+            _fitPoints.Clear();
+            var perCell = new Dictionary<(int, int), int>();
+            foreach (MatchTile tile in tiles)
+            {
+                var cell = (tile.X, tile.Y);
+                perCell.TryGetValue(cell, out int height);
+                perCell[cell] = height + 1;
+                AddBox(BoardPosition(tile.X, tile.Y, height));
+            }
+
+            for (int i = 0; i < _rules.TrayCapacity; i++)
+            {
+                AddBox(TraySlot(i));
+            }
+
+            _fitPoints.Add(new Vector3(0f, _maxStack * TileHeight + TileHalfHeight + PopupHeadroom, 0f));
+        }
+
+        private void AddBox(Vector3 center)
+        {
+            for (int i = 0; i < 8; i++)
+            {
+                _fitPoints.Add(new Vector3(
+                    center.x + ((i & 1) == 0 ? -TileRadius : TileRadius),
+                    center.y + ((i & 2) == 0 ? -TileHalfHeight : TileHalfHeight),
+                    center.z + ((i & 4) == 0 ? -TileRadius : TileRadius)));
+            }
         }
 
         private static float Dot(Vector3 a, Vector3 b)
