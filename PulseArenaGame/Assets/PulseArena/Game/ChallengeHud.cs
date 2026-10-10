@@ -99,6 +99,14 @@ namespace PulseArena.Game
             {
                 var rect = new Rect(lane * laneWidth + 6f, top, laneWidth - 12f, laneHeight);
 
+                // Only a Playing run gets a lane button. A button in any other state would sit under Start, Replay and
+                // Menu, and IMGUI gives the press to the first control drawn under it, so it would swallow their clicks.
+                bool playing = session.State == ChallengeState.Playing;
+                if (!playing)
+                {
+                    GUI.Box(rect, string.Empty);
+                }
+
                 if (session.HasLiveTarget(lane))
                 {
                     GUI.color = new Color(0.2f, 0.9f, 1f, 1f);
@@ -106,8 +114,8 @@ namespace PulseArena.Game
                     GUI.color = Color.white;
                 }
 
-                // Button handles the tap. Taps outside Playing are ignored by the session, so no state check is needed here.
-                if (GUI.Button(rect, string.Empty))
+                // Taps while paused are ignored by the controller, so the button needs no pause check here.
+                if (playing && GUI.Button(rect, string.Empty))
                 {
                     _controller.Tap(lane);
                 }

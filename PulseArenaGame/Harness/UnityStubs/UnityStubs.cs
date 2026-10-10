@@ -124,6 +124,10 @@ namespace UnityEngine
         {
         }
 
+        public static void Box(Rect rect, string text)
+        {
+        }
+
         public static void DrawTexture(Rect rect, Texture2D texture)
         {
         }
