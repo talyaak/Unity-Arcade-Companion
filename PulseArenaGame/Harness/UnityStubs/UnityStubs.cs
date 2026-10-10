@@ -198,11 +198,41 @@ namespace UnityEngine
     public class Renderer : Component
     {
         public Material material = new Material();
+        public Material sharedMaterial;
     }
 
-    public class Material
+    public class Material : Object
     {
+        public Material()
+        {
+        }
+
+        public Material(Material source)
+        {
+        }
+
         public Color color;
+
+        public bool HasProperty(string name)
+        {
+            return false;
+        }
+
+        public void SetColor(string name, Color value)
+        {
+        }
+    }
+
+    public struct Vector2
+    {
+        public Vector2(float x, float y)
+        {
+            this.x = x;
+            this.y = y;
+        }
+
+        public float x;
+        public float y;
     }
 
     public enum PrimitiveType
@@ -289,5 +319,30 @@ namespace UnityEngine
         {
             return a > b ? a : b;
         }
+    }
+}
+
+namespace UnityEngine.InputSystem
+{
+    // Compile-only stand-ins for the Input System calls used by MatchController.
+    public sealed class ButtonControl
+    {
+        public bool wasPressedThisFrame => false;
+    }
+
+    public sealed class Vector2Control
+    {
+        public Vector2 ReadValue()
+        {
+            return default(Vector2);
+        }
+    }
+
+    public class Pointer
+    {
+        public static Pointer current => null;
+
+        public ButtonControl press = new ButtonControl();
+        public Vector2Control position = new Vector2Control();
     }
 }

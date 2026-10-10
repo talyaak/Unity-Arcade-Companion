@@ -15,6 +15,8 @@ namespace PulseArena.Tooling
         private const string SceneFolder = "Assets/PulseArena/Scenes";
         private const string ScenePath = SceneFolder + "/Challenge.unity";
         private const string MatchScenePath = SceneFolder + "/Match.unity";
+        private const string MaterialFolder = "Assets/PulseArena/Materials";
+        private const string TileMaterialPath = MaterialFolder + "/Tile.mat";
 
         [MenuItem("Pulse Arena/Build Challenge Scene")]
         public static void Build()
@@ -60,7 +62,11 @@ namespace PulseArena.Tooling
 
             Scene scene = EditorSceneManager.NewScene(NewSceneSetup.DefaultGameObjects, NewSceneMode.Single);
             var root = new GameObject("MatchRoot");
-            root.AddComponent<MatchController>();
+            MatchController controller = root.AddComponent<MatchController>();
+
+            var serialized = new SerializedObject(controller);
+            serialized.FindProperty("_tileMaterial").objectReferenceValue = EnsureTileMaterial();
+            serialized.ApplyModifiedPropertiesWithoutUndo();
 
             // Look down at the board from the front, so the tray sits near the camera and the stacks are visible.
             Camera camera = Camera.main;
@@ -75,6 +81,24 @@ namespace PulseArena.Tooling
             AssetDatabase.SaveAssets();
 
             Debug.Log($"Pulse Arena: built {MatchScenePath}.");
+        }
+
+        // One base material asset for tiles. Copied from the default primitive material, so it works in any pipeline.
+        private static Material EnsureTileMaterial()
+        {
+            EnsureFolder(MaterialFolder);
+            Material existing = AssetDatabase.LoadAssetAtPath<Material>(TileMaterialPath);
+            if (existing != null)
+            {
+                return existing;
+            }
+
+            GameObject template = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            Material defaultMaterial = template.GetComponent<Renderer>().sharedMaterial;
+            var material = new Material(defaultMaterial);
+            Object.DestroyImmediate(template);
+            AssetDatabase.CreateAsset(material, TileMaterialPath);
+            return material;
         }
 
         // Adds the scene to Build Settings without removing scenes that are already there.

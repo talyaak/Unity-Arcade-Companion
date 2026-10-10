@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using PulseArena.Core;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace PulseArena.Game
 {
@@ -40,8 +41,12 @@ namespace PulseArena.Game
 
         [SerializeField] private int _stageIndex;
 
+        /// Base material for tiles, created by Pulse Arena > Build Match Scene. Colour variants are copies of it.
+        [SerializeField] private Material _tileMaterial;
+
         private readonly MatchRules _rules = new MatchRules();
         private readonly Dictionary<int, TileView> _views = new Dictionary<int, TileView>();
+        private readonly Dictionary<(int, bool), Material> _materials = new Dictionary<(int, bool), Material>();
         private MatchLevelSpec _spec;
         private MatchBoard _board;
         private double _clock;
@@ -52,6 +57,13 @@ namespace PulseArena.Game
 
         private void Start()
         {
+            if (_tileMaterial == null)
+            {
+                Debug.LogError("MatchController needs a Tile Material. Run Pulse Arena > Build Match Scene.", this);
+                enabled = false;
+                return;
+            }
+
             StartLevel(_stageIndex, (ulong)DateTime.UtcNow.Ticks);
         }
 
@@ -149,16 +161,26 @@ namespace PulseArena.Game
                 _popupLeft -= Time.deltaTime;
             }
 
-            if (Input.GetMouseButtonDown(0) && Camera.main != null)
+            HandlePointer();
+        }
+
+        // The Input System's Pointer covers mouse, pen and touch, so the same code works in the Editor and on a phone.
+        private void HandlePointer()
+        {
+            Pointer pointer = Pointer.current;
+            if (pointer == null || !pointer.press.wasPressedThisFrame || Camera.main == null)
             {
-                Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-                if (Physics.Raycast(ray, out RaycastHit hit))
+                return;
+            }
+
+            Vector2 screen = pointer.position.ReadValue();
+            Ray ray = Camera.main.ScreenPointToRay(new Vector3(screen.x, screen.y, 0f));
+            if (Physics.Raycast(ray, out RaycastHit hit))
+            {
+                TileView view = hit.collider.GetComponent<TileView>();
+                if (view != null)
                 {
-                    TileView view = hit.collider.GetComponent<TileView>();
-                    if (view != null)
-                    {
-                        Tap(view.TileId);
-                    }
+                    Tap(view.TileId);
                 }
             }
         }
@@ -200,13 +222,23 @@ namespace PulseArena.Game
             }
         }
 
+        private void OnDestroy()
+        {
+            foreach (Material material in _materials.Values)
+            {
+                Destroy(material);
+            }
+
+            _materials.Clear();
+        }
+
         private void CreateView(MatchTile tile)
         {
             GameObject go = GameObject.CreatePrimitive(Shapes[tile.Symbol % Shapes.Length]);
             go.name = "Tile " + tile.Id;
             TileView view = go.AddComponent<TileView>();
             view.Init(tile.Id, BoardPosition(tile.X, tile.Y, 0));
-            view.SetTint(Palette[tile.Symbol % Palette.Length]);
+            view.SetMaterial(MaterialFor(tile.Symbol, dimmed: false));
             _views.Add(tile.Id, view);
         }
 
@@ -257,7 +289,8 @@ namespace PulseArena.Game
             }
         }
 
-        // Tiles on top are full brightness. Covered tiles are dimmed, so the picture shows what is tappable.
+        // Tiles on top get the bright material. Covered tiles get the dimmed one, so the picture shows what is tappable.
+        // Tray tiles were free when they were tapped, so they keep their bright material.
         private void RefreshTints()
         {
             foreach (KeyValuePair<int, TileView> pair in _views)
@@ -267,14 +300,38 @@ namespace PulseArena.Game
                     continue;
                 }
 
-                Color color = Palette[tile.Symbol % Palette.Length];
-                if (!_board.IsFree(tile.Id))
-                {
-                    color = new Color(color.r * DimmedBrightness, color.g * DimmedBrightness, color.b * DimmedBrightness, 1f);
-                }
-
-                pair.Value.SetTint(color);
+                pair.Value.SetMaterial(MaterialFor(tile.Symbol, dimmed: !_board.IsFree(tile.Id)));
             }
+        }
+
+        // One material per palette colour and dimmed state, created once and shared by every tile that uses it.
+        private Material MaterialFor(int symbol, bool dimmed)
+        {
+            int paletteIndex = symbol % Palette.Length;
+            var key = (paletteIndex, dimmed);
+            if (_materials.TryGetValue(key, out Material material))
+            {
+                return material;
+            }
+
+            Color color = Palette[paletteIndex];
+            if (dimmed)
+            {
+                color = new Color(color.r * DimmedBrightness, color.g * DimmedBrightness, color.b * DimmedBrightness, 1f);
+            }
+
+            material = new Material(_tileMaterial);
+            if (material.HasProperty("_BaseColor"))
+            {
+                material.SetColor("_BaseColor", color);   // URP and HDRP lit shaders
+            }
+            else
+            {
+                material.color = color;                   // Built-in pipeline
+            }
+
+            _materials.Add(key, material);
+            return material;
         }
 
         private Vector3 BoardPosition(int x, int y, int height)

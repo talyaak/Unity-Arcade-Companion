@@ -2,7 +2,8 @@
     "name": "PulseArena.Game",
     "rootNamespace": "PulseArena.Game",
     "references": [
-        "PulseArena.Core"
+        "PulseArena.Core",
+        "Unity.InputSystem"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

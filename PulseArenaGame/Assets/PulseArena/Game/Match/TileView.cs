@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace PulseArena.Game
 {
-    /// Visual for one tile. MatchController sets its target and tint from Core's answers. This script only animates:
+    /// Visual for one tile. MatchController sets its target and material from Core's answers. This script only animates:
     /// it eases toward the target, shakes on a blocked tap, and shrinks away when its triple clears.
     public sealed class TileView : MonoBehaviour
     {
@@ -29,9 +29,10 @@ namespace PulseArena.Game
             _target = target;
         }
 
-        public void SetTint(Color color)
+        /// Assigns a shared material. Shared materials keep the tile's renderer from creating a copy.
+        public void SetMaterial(Material material)
         {
-            GetComponent<Renderer>().material.color = color;
+            GetComponent<Renderer>().sharedMaterial = material;
         }
 
         public void Shake()

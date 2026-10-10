@@ -54,3 +54,11 @@ Unity version under test: _not yet opened_
 - [ ] Clearing the board shows "Level cleared" with a Next stage button that works
 - [ ] Touch on a real device behaves like mouse (deferred)
 - [ ] Feel criteria in `docs/MATCH_MVP.md` judged by a person (not automatable)
+
+## Match input and materials (code written, not yet run in Unity)
+- [ ] Input System package installed in Package Manager; Active Input Handling set to Both (Player Settings); no legacy Input errors in the Console
+- [ ] Tap a tile with the mouse in Play Mode: it moves to the tray (the tap goes through Pointer, not the legacy Input class)
+- [ ] Build Match Scene creates `Assets/PulseArena/Materials/Tile.mat`, and the controller's Tile Material field is set
+- [ ] Tiles show the palette colours; covered tiles are dimmed; stacks and the tray look as before
+- [ ] Profiler (Rendering): material count stays flat across taps, with no new material per tap
+- [ ] Touch on a real device (deferred)
