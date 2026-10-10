@@ -1,0 +1,20 @@
+GC Allocated In Frame (ProfilerRecorder, category Memory). This is the counter behind the Profiler's GC Alloc column.
+Measured in Editor Play Mode (Unity 6000.4.0f1). A standalone build was not measured. One sample per frame.
+Sampling: the sampler reads cached references only and makes no FindAnyObjectByType call per tick. An earlier sampler did, and its numbers were discarded.
+
+IDLE, all match components enabled (no taps; sleep window, no eval calls running): 1,697 frames
+  median 9,013 B; p90 9,065 B; min 9,013 B; frames over 50 KB: 49 (2.9%); largest 7,383,974 B
+
+IDLE, every match component disabled (TileView, MatchController, MatchHud, MatchEffects, MatchPopup): 1,821 frames
+  median 9,013 B; p90 9,065 B; frames over 50 KB: 41 (2.3%); largest 8,280,798 B
+
+ANIMATION after warm-up (stage 5; 6 taps with moves, a clear, arcs and a popup; sleep window): 321 frames
+  median 9,013 B; p90 9,065 B; frames over 50 KB: 3 (tap frames); largest 611,207 B
+
+AFTER the animation (60 frames): median 9,013 B; largest 9,099 B
+
+READING
+  The steady 9,013 B per frame is the Editor's play-mode overhead. It is the same with every match component disabled.
+  The match components add no measurable steady allocation per frame, in idle or during animation.
+  The spikes (about 2 to 3% of frames) also appear with the components disabled. The tap frames are the only ones with extra allocation.
+  TARGET NOT MET in the Editor: 0 B per frame would need a standalone build or a device run (T7). Not done here.

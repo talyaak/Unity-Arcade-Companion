@@ -16,13 +16,23 @@ namespace PulseArena.Game
         private const float TrayY = 0.5f;
         private const float TrayZ = -4.6f;
         private const float MaxFrameSeconds = 0.1f;
-        private const float PopupSeconds = 0.9f;
         private const float DimmedBrightness = 0.45f;
         private const float TileScale = 0.9f;         // tile footprint in units (ASSET_PIPELINE section 3)
         private const float TileRadius = TileScale * 0.5f;
         private const float TileHalfHeight = TileScale; // cylinders and capsules are 2 units tall at scale 1
         private const float PopupHeadroom = 1f;       // room above the stacks for the world-space "+points" popup (D6)
-        private const float FramingMargin = 1.05f;
+        private const float FramingMargin = 1.10f;    // margin around the content, set by the architect (2026-10-11)
+
+        // Juice standard timings (GAME_DESIGN, Motion). Presentation only: none of these change Core's clock.
+        private const float HitStopSeconds = 0.06f;   // 60 ms of presentation delay on a clear
+        private const float BlockedFlashSeconds = 0.15f;
+        private const float LossFlashSeconds = 0.3f;
+        private const float NudgeSeconds = 0.15f;     // camera nudge on clears at combo 3 or more
+        private const float NudgeAmplitude = 0.05f;
+        private const int NudgeCombo = 3;
+        private const float ConfettiWaveSeconds = 0.35f;
+
+        private static readonly (int, bool) RedKey = (-1, false);
 
         // Original palette and shapes for this game. Symbols beyond these lists cycle through them.
         private static readonly Color[] Palette =
@@ -52,24 +62,45 @@ namespace PulseArena.Game
         private readonly MatchRules _rules = new MatchRules();
         private readonly Dictionary<int, TileView> _views = new Dictionary<int, TileView>();
         private readonly Dictionary<(int, bool), Material> _materials = new Dictionary<(int, bool), Material>();
+        private readonly List<Vector3> _fitPoints = new List<Vector3>();
         private MatchLevelSpec _spec;
         private MatchBoard _board;
         private double _clock;
-        private string _popup = string.Empty;
-        private float _popupLeft;
         private Camera _camera;
+        private Vector3 _cameraBase;
+        private Vector3 _cameraForward;
         private int _maxStack;
         private int _fitWidth;
         private int _fitHeight;
         private bool _pointerWasDown;
-        private readonly List<Vector3> _fitPoints = new List<Vector3>();
+        private bool _reduceMotion;
+        private MatchEffects _effects;
+        private MatchPopup _popupView;
+        private float _nudgeLeft;
+        private int _wavesLeft;
+        private float _waveTimer;
 
         public MatchBoard Board => _board;
         public int StageNumber => _stageIndex + 1;
         public int TrayCapacity => _rules.TrayCapacity;
 
-        /// The popup text while it is showing, otherwise empty.
-        public string PopupText => _popupLeft > 0f ? _popup : string.Empty;
+        /// Reduce Motion: no camera nudge, shake, confetti or hit-stop. Moves and colour changes stay.
+        public bool ReduceMotion => _reduceMotion;
+
+        // Verification fields (game time, or Core's clock). The verification reads them; the game does not.
+        public double Clock => _clock;
+        public float LastTapTime { get; private set; } = -1f;
+        public float NudgeStartedAt { get; private set; } = -1f;
+        public float NudgeEndedAt { get; private set; } = -1f;
+        public float MaxNudge { get; private set; }
+
+        /// Particles for clears and wins. Read by the verification.
+        public MatchEffects Effects => _effects;
+
+        public void ToggleReduceMotion()
+        {
+            _reduceMotion = !_reduceMotion;
+        }
 
         /// Restarts the current stage with a new seed. Called by the HUD's Retry button.
         public void Retry()
@@ -93,6 +124,8 @@ namespace PulseArena.Game
             }
 
             _camera = Camera.main;
+            _effects = new GameObject("Match effects").AddComponent<MatchEffects>();
+            _popupView = new GameObject("Match popup").AddComponent<MatchPopup>();
             StartLevel(_stageIndex, (ulong)DateTime.UtcNow.Ticks);
         }
 
@@ -107,8 +140,8 @@ namespace PulseArena.Game
             _stageIndex = stageIndex;
             _spec = MatchStages.All[stageIndex];
             _clock = 0;
-            _popup = string.Empty;
-            _popupLeft = 0f;
+            _nudgeLeft = 0f;
+            _wavesLeft = 0;
 
             MatchLevel level = MatchLevelGenerator.Generate(_spec, seed);
             _board = new MatchBoard(level.Tiles, _rules);
@@ -145,11 +178,26 @@ namespace PulseArena.Game
                 }
             }
 
+            LastTapTime = Time.time;
+            int trayBefore = _board.Tray.Count;
             MatchStep step = _board.TapTile(tileId, _clock);
+            AudioCues.Play(AudioCue.Tap);
 
             if (step.Outcome == MatchOutcome.Blocked && _views.TryGetValue(tileId, out TileView blocked))
             {
-                blocked.Shake();
+                if (!_reduceMotion)
+                {
+                    blocked.Shake();
+                }
+
+                blocked.Flash(RedMaterial, BlockedFlashSeconds);
+                AudioCues.Play(AudioCue.Blocked);
+            }
+
+            if (step.Outcome == MatchOutcome.Moved && _views.TryGetValue(tileId, out TileView moved))
+            {
+                moved.Squash();
+                AudioCues.Play(AudioCue.Move);
             }
 
             if (step.Outcome == MatchOutcome.Moved || step.Outcome == MatchOutcome.Cleared
@@ -163,17 +211,50 @@ namespace PulseArena.Game
                 if (e.Kind == MatchEventKind.Cleared)
                 {
                     sameSymbolInTray.Add(tileId);
+                    float hitStop = _reduceMotion ? 0f : HitStopSeconds;
+                    // The popup sits over the tray slot where the triple formed. The cleared tiles have left the tray.
+                    Vector3 popupAt = TraySlot(Math.Min(trayBefore, _rules.TrayCapacity - 1));
+
                     foreach (int id in sameSymbolInTray)
                     {
                         if (_views.TryGetValue(id, out TileView vanishing))
                         {
-                            vanishing.Vanish();
+                            vanishing.Vanish(hitStop);
+                            _effects.Burst(vanishing.transform.position, hitStop);
                             _views.Remove(id);
                         }
                     }
 
-                    _popup = $"+{e.Points}";
-                    _popupLeft = PopupSeconds;
+                    _popupView.Show($"+{e.Points}", popupAt, FacingCamera());
+                    AudioCues.Play(AudioCue.Clear);
+                    if (!_reduceMotion && _board.Combo >= NudgeCombo)
+                    {
+                        _nudgeLeft = NudgeSeconds;
+                        NudgeStartedAt = Time.time;
+                        NudgeEndedAt = -1f;
+                    }
+                }
+            }
+
+            if (step.Outcome == MatchOutcome.Won)
+            {
+                AudioCues.Play(AudioCue.Win);
+                if (!_reduceMotion)
+                {
+                    _wavesLeft = MatchEffects.ConfettiTotal / MatchEffects.ConfettiWaveSize;
+                    _waveTimer = 0f;
+                }
+            }
+            else if (step.Outcome == MatchOutcome.Lost)
+            {
+                AudioCues.Play(AudioCue.Lose);
+                foreach (MatchTile inTray in _board.Tray)
+                {
+                    if (_views.TryGetValue(inTray.Id, out TileView lost))
+                    {
+                        lost.Flash(RedMaterial, LossFlashSeconds);
+                        lost.Drop(LossFlashSeconds);
+                    }
                 }
             }
 
@@ -188,16 +269,13 @@ namespace PulseArena.Game
                 _clock += FrameTime.Clamp(Time.deltaTime, MaxFrameSeconds);
             }
 
-            if (_popupLeft > 0f)
-            {
-                _popupLeft -= Time.deltaTime;
-            }
-
             if (_board != null && (Screen.width != _fitWidth || Screen.height != _fitHeight))
             {
                 FitCamera();
             }
 
+            UpdateCameraNudge();
+            UpdateConfetti();
             HandlePointer();
         }
 
@@ -230,6 +308,63 @@ namespace PulseArena.Game
                     Tap(view.TileId);
                 }
             }
+        }
+
+        // Camera nudge on clears at combo 3 or more: a short push toward the view, at most 0.05 units, easing out.
+        private void UpdateCameraNudge()
+        {
+            if (_camera == null || _nudgeLeft <= 0f)
+            {
+                return;
+            }
+
+            _nudgeLeft -= Time.deltaTime;
+            if (_nudgeLeft <= 0f)
+            {
+                _camera.transform.position = _cameraBase;
+                NudgeEndedAt = Time.time;
+                return;
+            }
+
+            float strength = _nudgeLeft / NudgeSeconds;
+            _camera.transform.position = _cameraBase + _cameraForward * (NudgeAmplitude * strength * strength);
+            float offset = (_camera.transform.position - _cameraBase).magnitude;
+            if (offset > MaxNudge)
+            {
+                MaxNudge = offset;
+            }
+        }
+
+        // Confetti: three waves of 20 (60 in all), 0.35 s apart, falling over the board. Reduce Motion stops them.
+        private void UpdateConfetti()
+        {
+            if (_wavesLeft <= 0 || _effects == null)
+            {
+                return;
+            }
+
+            if (_reduceMotion)
+            {
+                _wavesLeft = 0;
+                return;
+            }
+
+            _waveTimer -= Time.deltaTime;
+            if (_waveTimer > 0f)
+            {
+                return;
+            }
+
+            _wavesLeft--;
+            _waveTimer = ConfettiWaveSeconds;
+            float halfWidth = (_spec.GridWidth - 1) * 0.5f * CellSpacing + TileRadius;
+            float halfDepth = (_spec.GridHeight - 1) * 0.5f * CellSpacing + TileRadius;
+            _effects.ReleaseConfetti(halfWidth, halfDepth, _maxStack * TileHeight + 2f);
+        }
+
+        private Quaternion FacingCamera()
+        {
+            return _camera != null ? _camera.transform.rotation : Quaternion.identity;
         }
 
         // Keeps the board, tray and popup room on screen at any aspect ratio. The camera fits the real content points, not a
@@ -271,7 +406,9 @@ namespace PulseArena.Game
                 distance = Mathf.Max(distance, Mathf.Abs(Dot(rel, up)) / tanV - ahead);
             }
 
-            _camera.transform.position = center - forward * (distance * FramingMargin);
+            _cameraBase = center - forward * (distance * FramingMargin);
+            _cameraForward = forward;
+            _camera.transform.position = _cameraBase;
         }
 
         // Points the camera must keep on screen: every tile's corners at its layout position, every tray slot, and a point
@@ -360,7 +497,7 @@ namespace PulseArena.Game
         }
 
         // Board tiles go to their stack position, and tray tiles go to their slots. Heights come from the tiles that
-        // remain in each cell, so a stack settles when the tiles above it leave.
+        // remain in each cell, so a stack settles when the tiles above it leave. Tray arrivals arc; stacks settle straight down.
         private void LayoutBoard()
         {
             var stacks = new Dictionary<(int, int), List<MatchTile>>();
@@ -386,13 +523,13 @@ namespace PulseArena.Game
                 stack.Sort((a, b) => a.Layer.CompareTo(b.Layer));
                 for (int height = 0; height < stack.Count; height++)
                 {
-                    _views[stack[height].Id].SetTarget(BoardPosition(stack[height].X, stack[height].Y, height));
+                    _views[stack[height].Id].SetTarget(BoardPosition(stack[height].X, stack[height].Y, height), arc: false);
                 }
             }
 
             for (int i = 0; i < _board.Tray.Count; i++)
             {
-                _views[_board.Tray[i].Id].SetTarget(TraySlot(i));
+                _views[_board.Tray[i].Id].SetTarget(TraySlot(i), arc: true);
             }
         }
 
@@ -411,20 +548,28 @@ namespace PulseArena.Game
             }
         }
 
+        // The shared red for blocked taps and losses. Created once, like the palette materials.
+        private Material RedMaterial => ColorMaterial(RedKey, new Color(0.9f, 0.15f, 0.12f, 1f));
+
         // One material per palette colour and dimmed state, created once and shared by every tile that uses it.
         private Material MaterialFor(int symbol, bool dimmed)
         {
             int paletteIndex = symbol % Palette.Length;
-            var key = (paletteIndex, dimmed);
-            if (_materials.TryGetValue(key, out Material material))
-            {
-                return material;
-            }
-
             Color color = Palette[paletteIndex];
             if (dimmed)
             {
                 color = new Color(color.r * DimmedBrightness, color.g * DimmedBrightness, color.b * DimmedBrightness, 1f);
+            }
+
+            return ColorMaterial((paletteIndex, dimmed), color);
+        }
+
+        // One material per key, created once and shared by every tile that uses it.
+        private Material ColorMaterial((int, bool) key, Color color)
+        {
+            if (_materials.TryGetValue(key, out Material material))
+            {
+                return material;
             }
 
             material = new Material(_tileMaterial);

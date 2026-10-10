@@ -90,9 +90,28 @@ Game view only advances while the Editor is the active window; `Application.runI
 - [x] "Level cleared" and a "Next stage" button at Won (`hud-won.png`); "Tray full" and a "Retry" button at Lost (`hud-lost.png`). Both buttons are hidden while playing
 - [x] Next stage button pressed with `simulate_pointer` (down, then up): stage 2 started, score 0, board reset
 - [x] Retry button pressed with `simulate_pointer`: stage 5 restarted, tray 0, buttons hidden
-- [x] "+100" popup shows in the message label after a clear (read through the HUD's Update run from eval, while the popup was showing)
+- [x] "+100" popup shows in the message label after a clear (superseded in T3: the popup is now a world-space TextMesh, and the message label shows results only)
 - [x] Tray moves keep the material count flat: `Resources.FindObjectsOfTypeAll<Material>().Length` 99 before and after three tray moves
 - [x] Console: no game errors. Two `/api/exec` timeouts from the MCP bridge during eval calls, unrelated to the game
 - [ ] GC Alloc 0 B per frame during Playing (Profiler). **Not verified:** the Profiler view was not captured
 - [ ] Buttons and taps on a touch device. **Not verified:** no device (T7)
-- [ ] Reduce Motion disables USS transitions. **Nothing to disable yet:** the HUD has no transitions; the Reduce Motion toggle comes with T3
+- [ ] Reduce Motion disables USS transitions. **Nothing to disable yet:** the HUD has no transitions. The Reduce Motion button is in T3 (see the Juice section)
+
+## Juice (T3; Unity 6000.4.0f1, Play Mode, Editor; numbers in docs/evidence/T3/measurements.txt)
+- [x] Move to tray: 0.253 s, ease-out, arc peak 0.300 units (design 0.25 s and 0.3)
+- [x] Blocked tap: shake 0.302 s, peak offset 0.120 units; red flash 0.154 s (design 0.3 s, 0.12, 0.15 s)
+- [x] Dim and bright tint: covered tile is 45% of the bright colour for the same symbol (ratio 0.450)
+- [x] Clear hit-stop: 0.069 s from tap to pop start (design 0.06 s, one frame of error); Core's clock keeps running
+- [x] Burst: 12 particles per cleared tile, 36 for a triple (design: at most 12 per tile)
+- [x] Popup: '+100' world-space, 0.900 s, rises 0.600 units, alpha reaches 0 (design 0.9 s and 0.6 units); screenshot `popup-over-tray.png`
+- [x] Camera nudge on a clear at combo 3 or more: 0.155 s, peak 0.0431 units (design 0.15 s, at most 0.05 units)
+- [x] Win confetti: 60 particles in 3 waves; first to last wave 0.707 s; live peak 40 (design: 60 in total, never more than 40 live)
+- [x] Result panel slide: 0.290 s (design 0.3 s); screenshot `confetti-wave.png` shows the panel mid-slide
+- [x] Loss: tray red flash 0.301 s, drop 0.500 units in 0.498 s (design 0.3 s, 0.5 units). **Deviation:** the fade is a shrink to zero, not an alpha fade (no transparent material). Screenshot `loss-flash.png`
+- [x] Last-slot triple in the scene: tray 6 to 4 on a triple, state Playing, no loss (`last-slot-triple.txt`)
+- [x] Reduce Motion on: no shake (peak 0.000), no hit-stop (0.006 s), no confetti (0 on a win); the red flash stays (0.153 s). **Not confirmed:** the camera nudge under Reduce Motion (the combo reached in that run was not logged)
+- [ ] GC Alloc 0 B per frame during Playing. **Not met in the Editor:** the steady baseline is 9,013 B per frame with every match component disabled too. The match code adds none in idle or animation (`gc-profiler.txt`). A standalone build or device run is needed for 0 B
+- [ ] Tap squash (0.12 s, to 0.9 and back). **Not measured**
+- [ ] Shared materials only: the red material is shared; a material count across T3 taps was not re-measured
+- [ ] Touch on a device (T7). Feel (playtest, T5). Audio hooks are silent by design (`AudioCues`)
+- [ ] Framing at FramingMargin 1.10: all points inside at 16:9 and 9:16, margins 4.5% (bottom, 16:9) and 4.9% (sides, 9:16) (`docs/evidence/T2/framing-margin110.txt`). **Note:** the popup can sit under the bottom Reduce Motion button at 1280 x 720 (`popup-over-tray.png`)

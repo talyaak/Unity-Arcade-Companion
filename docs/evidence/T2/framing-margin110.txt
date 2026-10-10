@@ -1,0 +1,9 @@
+FramingMargin 1.10. Stage 5, seed 4242, three tiles in the tray. Every fit point (tile corners, tray slots, popup point) projected with WorldToViewportPoint after FitCamera. Supersedes framing-tile09.txt (FramingMargin 1.05).
+1920x1080 aspect=1.7778 camPos=(0.00, 10.63, -6.46) fitPoints=489
+  content viewport x 0.212..0.788 (width 0.576), y 0.045..0.846
+  margins: left 21.2%, right 21.2%, bottom 4.5%, top 15.4%
+  content points outside viewport: 0
+1080x1920 aspect=0.5625 camPos=(0.00, 17.62, -11.36) fitPoints=489
+  content viewport x 0.049..0.951 (width 0.902), y 0.256..0.694
+  margins: left 4.9%, right 4.9%, bottom 25.6%, top 30.6%
+  content points outside viewport: 0

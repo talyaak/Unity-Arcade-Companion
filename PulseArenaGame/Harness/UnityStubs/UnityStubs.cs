@@ -40,6 +40,8 @@ namespace UnityEngine
 
     public static class Time
     {
+        public static float time;
+        public static int frameCount;
         public static float deltaTime;
     }
 
@@ -156,6 +158,7 @@ namespace UnityEngine
         public Vector3 forward = new Vector3(0f, 0f, 1f);
         public Vector3 right = new Vector3(1f, 0f, 0f);
         public Vector3 up = new Vector3(0f, 1f, 0f);
+        public Quaternion rotation = new Quaternion();
     }
 
     public struct Vector3
@@ -223,6 +226,10 @@ namespace UnityEngine
 
     public class Material : Object
     {
+        public Material(Shader shader)
+        {
+        }
+
         public Material()
         {
         }
@@ -338,6 +345,7 @@ namespace UnityEngine
         }
 
         public const float Deg2Rad = 0.0174532924f;
+        public const float PI = 3.14159265f;
 
         public static float Max(float a, float b)
         {
@@ -423,6 +431,8 @@ namespace UnityEngine.UIElements
         public float marginLeft;
         public float marginRight;
         public float marginBottom;
+        public float marginTop;
+        public float opacity;
         public float fontSize;
         public Color color;
         public Color backgroundColor;
@@ -459,4 +469,129 @@ namespace UnityEngine.UIElements
     public class PanelSettings : ScriptableObject
     {
     }
+}
+
+namespace UnityEngine
+{
+    // Compile-only stand-ins for the popup, particle and random calls used by the match juice.
+    public struct Quaternion
+    {
+        public static Quaternion identity => new Quaternion();
+    }
+
+    public static class Random
+    {
+        public static float Range(float min, float max)
+        {
+            return min;
+        }
+
+        public static int Range(int min, int max)
+        {
+            return min;
+        }
+    }
+
+    public enum TextAlignment
+    {
+        Left,
+        Center,
+        Right
+    }
+
+    public class TextMesh : Component
+    {
+        public string text;
+        public float characterSize;
+        public int fontSize;
+        public TextAnchor anchor;
+        public TextAlignment alignment;
+        public Color color;
+    }
+
+    public class Shader : Object
+    {
+        public static Shader Find(string name)
+        {
+            return null;
+        }
+    }
+
+    public struct Color32
+    {
+        public static implicit operator Color32(Color color)
+        {
+            return new Color32();
+        }
+    }
+
+    public enum ParticleSystemRenderMode
+    {
+        Billboard
+    }
+
+    public enum ParticleSystemSimulationSpace
+    {
+        Local,
+        World
+    }
+
+    public class ParticleSystemRenderer : Component
+    {
+        public ParticleSystemRenderMode renderMode;
+        public Material sharedMaterial;
+    }
+
+    public class ParticleSystem : Component
+    {
+        public struct MainModule
+        {
+            public bool loop;
+            public bool playOnAwake;
+            public int maxParticles;
+            public float startLifetime;
+            public float startSpeed;
+            public float startSize;
+            public float gravityModifier;
+            public ParticleSystemSimulationSpace simulationSpace;
+        }
+
+        public struct EmissionModule
+        {
+            public float rateOverTime;
+        }
+
+        public struct ShapeModule
+        {
+            public bool enabled;
+        }
+
+        public struct EmitParams
+        {
+            public Vector3 position;
+            public Vector3 velocity;
+            public Color32 startColor;
+        }
+
+        public MainModule main => new MainModule();
+
+        public EmissionModule emission => new EmissionModule();
+
+        public ShapeModule shape => new ShapeModule();
+
+        public int particleCount => 0;
+
+        public void Play()
+        {
+        }
+
+        public void Emit(EmitParams emitParams, int count)
+        {
+        }
+    }
+}
+
+namespace UnityEngine.UIElements
+{
+    // Compile-only additions for the match result panel.
 }

@@ -1,0 +1,5 @@
+Last-slot triple, in the scene (stage 5; search over seeds, first seed succeeded; Playing state).
+Setup: 6 taps. The tray held 6 tiles: two of symbol 6 and four tiles of other symbols, with no triple.
+Then the free third tile of symbol 6 was tapped.
+Result: Cleared. Tray 6 before the tap, 4 after. State after the tap: Playing (no loss).
+Method: the search ran from the Editor update loop, one tap per Editor tick.

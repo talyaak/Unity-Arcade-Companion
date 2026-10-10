@@ -4,12 +4,14 @@ using UnityEngine.UIElements;
 
 namespace PulseArena.Game
 {
-    /// Match HUD in UI Toolkit: stage, score, combo, tray count, one message, and the Retry and Next stage buttons.
-    /// It shows what MatchController and Core report and sends button presses back. It keeps no game state, and a label
-    /// is written only when its value changes.
+    /// Match HUD in UI Toolkit: stage, score, combo, tray count, the result (Level cleared or Tray full) with its buttons,
+    /// and the Reduce Motion toggle. Points are world-space popups (D6), so the message shows results only. It keeps no game
+    /// state, and a label is written only when its value changes.
     public sealed class MatchHud : MonoBehaviour
     {
         private const float Padding = 16f;
+        private const float SlideSeconds = 0.3f;     // the result panel slides in over 0.3 s (juice standard)
+        private const float SlideDistance = 160f;
         private static readonly Color Ink = new Color(0.96f, 0.96f, 0.98f, 1f);
         private static readonly Color ButtonFill = new Color(0.25f, 0.75f, 0.72f, 1f);
         private static readonly Color ButtonInk = new Color(0.07f, 0.08f, 0.1f, 1f);
@@ -17,9 +19,11 @@ namespace PulseArena.Game
         [SerializeField] private MatchController _match;
 
         private Label _status;
+        private VisualElement _result;
         private Label _message;
         private Button _retry;
         private Button _next;
+        private Button _motion;
 
         private int _shownStage = -1;
         private int _shownScore = -1;
@@ -27,7 +31,12 @@ namespace PulseArena.Game
         private int _shownTray = -1;
         private int _shownLeft = -1;
         private MatchState _shownState = MatchState.Playing;
-        private string _shownMessage = string.Empty;
+        private float _slideT = 1f;
+        private bool _shownReduce;
+
+        // Verification fields (game time). The verification reads them; the game does not.
+        public float SlideStartedAt { get; private set; } = -1f;
+        public float SlideEndedAt { get; private set; } = -1f;
 
         // Start runs after UIDocument has its panel, so the root element exists here.
         private void Start()
@@ -43,20 +52,31 @@ namespace PulseArena.Game
             _status = AddLabel(root, 28f);
             root.Add(Spacer(1f));
 
-            _message = AddLabel(root, 48f);
+            _result = new VisualElement();
+            _result.pickingMode = PickingMode.Ignore;
+            _result.style.opacity = 0f;
+            _message = AddLabel(_result, 48f);
             _message.style.unityTextAlign = TextAnchor.MiddleCenter;
             _message.style.marginBottom = Padding;
 
             var buttons = new VisualElement();
             buttons.style.flexDirection = FlexDirection.Row;
             buttons.style.justifyContent = Justify.Center;
-            _retry = AddButton(buttons, "Retry");
-            _next = AddButton(buttons, "Next stage");
+            _retry = AddButton(buttons, "Retry", visible: false);
+            _next = AddButton(buttons, "Next stage", visible: false);
             _retry.clicked += OnRetry;
             _next.clicked += OnNextStage;
-            root.Add(buttons);
+            _result.Add(buttons);
+            root.Add(_result);
 
             root.Add(Spacer(2f));
+
+            var motionRow = new VisualElement();
+            motionRow.style.flexDirection = FlexDirection.Row;
+            motionRow.style.justifyContent = Justify.Center;
+            _motion = AddButton(motionRow, "Reduce motion: off", visible: true);
+            _motion.clicked += OnToggleMotion;
+            root.Add(motionRow);
         }
 
         private void Update()
@@ -88,15 +108,38 @@ namespace PulseArena.Game
                 _shownState = state;
                 _retry.style.display = state == MatchState.Lost ? DisplayStyle.Flex : DisplayStyle.None;
                 _next.style.display = state == MatchState.Won ? DisplayStyle.Flex : DisplayStyle.None;
+                _message.text = state == MatchState.Won ? "Level cleared"
+                    : state == MatchState.Lost ? "Tray full"
+                    : string.Empty;
+                _slideT = state == MatchState.Playing ? 1f : 0f;
+                if (state != MatchState.Playing)
+                {
+                    SlideStartedAt = Time.time;
+                    SlideEndedAt = -1f;
+                }
+                if (state == MatchState.Playing)
+                {
+                    _result.style.opacity = 0f;
+                }
             }
 
-            string message = state == MatchState.Won ? "Level cleared"
-                : state == MatchState.Lost ? "Tray full"
-                : _match.PopupText;
-            if (message != _shownMessage)
+            if (_slideT < 1f)
             {
-                _shownMessage = message;
-                _message.text = message;
+                _slideT = Mathf.Min(1f, _slideT + Time.deltaTime / SlideSeconds);
+                float e = 1f - (1f - _slideT) * (1f - _slideT);   // ease-out arrival
+                _result.style.marginTop = (1f - e) * SlideDistance;
+                _result.style.opacity = e;
+                if (_slideT >= 1f)
+                {
+                    SlideEndedAt = Time.time;
+                }
+            }
+
+            bool reduce = _match.ReduceMotion;
+            if (reduce != _shownReduce)
+            {
+                _shownReduce = reduce;
+                _motion.text = reduce ? "Reduce motion: on" : "Reduce motion: off";
             }
         }
 
@@ -110,6 +153,11 @@ namespace PulseArena.Game
             _match.NextStage();
         }
 
+        private void OnToggleMotion()
+        {
+            _match.ToggleReduceMotion();
+        }
+
         private static Label AddLabel(VisualElement parent, float size)
         {
             var label = new Label();
@@ -120,7 +168,7 @@ namespace PulseArena.Game
             return label;
         }
 
-        private static Button AddButton(VisualElement parent, string text)
+        private static Button AddButton(VisualElement parent, string text, bool visible)
         {
             var button = new Button { text = text };
             button.style.fontSize = 32f;
@@ -132,7 +180,8 @@ namespace PulseArena.Game
             button.style.paddingBottom = 16f;
             button.style.marginLeft = 8f;
             button.style.marginRight = 8f;
-            button.style.display = DisplayStyle.None;
+            button.style.marginTop = 8f;
+            button.style.display = visible ? DisplayStyle.Flex : DisplayStyle.None;
             parent.Add(button);
             return button;
         }
