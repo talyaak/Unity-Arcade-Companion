@@ -76,5 +76,8 @@ with the evidence quoted here.
 Note: the harness runs on .NET 8 in the csproj but this laptop has only the .NET 10 runtime. Run
 `$env:DOTNET_ROLL_FORWARD='Major'` before `dotnet test`.
 
+## D8: Asset pipeline is a later-stage plan. Status: decided (2026-10-11, user)
 
-
+`docs/ASSET_PIPELINE.md` is approved as a plan for a later stage. No generator work, generated assets or ledger rows
+until the user starts the asset stage. Primitives stay the art. Known gap: four primitive shapes for seven symbols, so
+three symbols differ by colour only; the art stage must fix this. Tile scale 0.9 units is a T2 task.

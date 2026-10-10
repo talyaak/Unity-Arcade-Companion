@@ -1,7 +1,6 @@
-# Asset pipeline (Pulse Arena)
+﻿# Asset pipeline (Pulse Arena)
 
-Status: **SPEC, awaiting user approval.** Nothing is imported. Nothing is wired to any generator. Until the user
-approves this spec, primitives are the art (`GAME_DESIGN.md`, Visual standard).
+Status: **approved, later stage** (user, 2026-10-11). This is a plan only. No generator work, no generated assets and no\nledger rows until the user starts the asset stage. Nothing is imported. Primitives are the art (`GAME_DESIGN.md`, Visual standard).
 
 Scope: 3D tile models and their textures, and later audio. Original work only. No third-party brands, characters,
 logos or lookalikes. Names stay original too.
@@ -70,3 +69,11 @@ questions about a generator (paid plans, credits) go to the user.
 
 The same ledger and gate apply. Until audio is chosen and logged, only silent or generated placeholder clips exist
 (`GAME_DESIGN.md`, Audio).
+
+## Known gaps for the art stage
+
+- **Silhouette gap:** the primitives give four shapes (cube, sphere, cylinder, capsule) for seven symbols, so symbols
+  5 to 7 repeat a shape and differ by colour only. This misses the comfort rule that each symbol has its own shape.
+  Accepted for the primitive stage. The art stage must give each of the seven symbols a distinct silhouette.
+- **Tile scale:** the 0.9-unit tile footprint in section 3 is a target for the art stage. Setting the primitive tiles to
+  0.9 units is a T2 task for the builder.
