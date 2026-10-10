@@ -8,4 +8,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/PulseArena/Scenes/Challenge.unity
     guid: 6cd270b48dc92fa48ab20ce1d55b127f
+  - enabled: 1
+    path: Assets/PulseArena/Scenes/Match.unity
+    guid: 88188ea527a28b741bc16344b9737435
   m_configObjects: {}
