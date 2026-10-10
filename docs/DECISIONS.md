@@ -27,7 +27,7 @@ Proposal: if boosters are added, they are **earned only** by play (for example, 
 kind, no random packs, no paid items. Decision on whether to add them is deferred until pacing (T5) and the playtest
 show a need. Anything touching money goes to the user first.
 
-## D5: Render pipeline. Status: OPEN
+## D5: Render pipeline = Built-in for the MVP. Status: decided (2026-10-11)
 
 The builder records Built-in or URP in T2, with the evidence (Graphics settings screenshot or MCP reading).
 Constraint for the choice: soft shadows on one directional light, and shared materials from D3. Do not migrate
@@ -85,3 +85,17 @@ Note: the harness runs on .NET 8 in the csproj but this laptop has only the .NET
 `docs/ASSET_PIPELINE.md` is approved as a plan for a later stage. No generator work, generated assets or ledger rows
 until the user starts the asset stage. Primitives stay the art. Known gap: four primitive shapes for seven symbols, so
 three symbols differ by colour only; the art stage must fix this. Tile scale 0.9 units is a T2 task.
+
+Decision on D5: stay on the Built-in pipeline for the MVP. The evidence (T2) shows Built-in with a soft-shadow directional
+light and shared Standard materials, which meets the visual standard. A pipeline migration costs a material and shader
+pass for no player-visible gain right now. Would change it: the art stage needing URP shaders or post-processing, or a
+device run (T7) showing Built-in cannot hold frame time. Then add a new decision and migrate with the migrate-birp-to-urp steps.
+
+## D9: Juice confetti limit. Status: decided (2026-10-11)
+
+`GAME_DESIGN.md` had two limits that read as a conflict (60 total vs 40 live). Reading: confetti plays in waves, at most
+60 particles in total per win and never more than 40 live at any moment. Builder asked (Q2); this is the answer.
+
+## D10: CoreTests baseline. Status: decided (2026-10-11)
+
+The current count is 109 (107 plus the two pacing tests). Older text that says 107 is out of date.
