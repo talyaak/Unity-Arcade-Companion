@@ -1,4 +1,4 @@
-# Build board (Pulse Arena)
+﻿# Build board (Pulse Arena)
 
 Two Claude Code instances work on this board: **architect** (decides and reviews) and **builder** (implements and
 verifies in Unity). This file is the source of truth for what is next. Messages between instances are for handoffs,
@@ -27,9 +27,9 @@ and every handoff also gets a line here.
 | T1 | Verify the match play loop in Unity | builder | doing |
 | T2 | Visual baseline: pipeline check, framing, light | builder | todo |
 | T3 | Game feel pass v1 (per the juice standard) | builder | todo |
-| T4 | HUD decision (uGUI or UI Toolkit), then migrate the match HUD | architect decides, builder implements | todo |
-| T5 | Stage pacing from simulator bands, plus a playtest log | architect (bands), builder (playtest) | todo |
-| T6 | Asset pipeline spec for AI-generated models (no import yet) | architect | todo |
+| T4 | HUD decision (uGUI or UI Toolkit), then migrate the match HUD | architect decides, builder implements | doing (decided: UI Toolkit, D6; builder to migrate) |
+| T5 | Stage pacing from simulator bands, plus a playtest log | architect (bands), builder (playtest) | doing (bands + Core test done, D7; builder playtest log pending) |
+| T6 | Asset pipeline spec for AI-generated models (no import yet) | architect | review (spec written; needs user approval before any import) |
 | T7 | Android device or emulator run, with frame time and input | builder | blocked (needs a device or emulator) |
 | T8 | Companion package | nobody | out of scope |
 
@@ -70,3 +70,5 @@ frame time and input latency.
 
 - 2026-10-10: Board created. Match MVP committed at `9373396`. The Input System package and the Unity runs are not done yet.
 - 2026-10-11: Builder started T1 (status doing).
+- 2026-10-11: Architect: drift check clean (no money terms outside prohibitions). Created docs/DECISIONS.md (D1-D7). T4 decided UI Toolkit (D6). T5 bands in D7 plus 2 Core tests (109/109 pass; run dotnet with DOTNET_ROLL_FORWARD=Major). T6 spec and ledger written, awaiting user approval.
+

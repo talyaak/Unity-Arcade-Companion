@@ -329,5 +329,44 @@ namespace PulseArena.Tests
                 Assert.GreaterOrEqual(greedy, uniform, $"symbols {spec.SymbolCount}");
             }
         }
+
+        // Target bands per stage (docs/DECISIONS.md, D7). Measured on seeds 1..200, then widened by 8 points each way
+        // (about 2.3 standard errors at 200 seeds). Order: greedy min, greedy max, uniform min, uniform max.
+        // Change a band only with a DECISIONS entry. A stage-size change that breaks a band must update both.
+        private static readonly double[][] PacingBands =
+        {
+            new[] { 0.92, 1.00, 0.92, 1.00 },
+            new[] { 0.91, 1.00, 0.65, 0.81 },
+            new[] { 0.88, 1.00, 0.17, 0.33 },
+            new[] { 0.76, 0.92, 0.00, 0.12 },
+            new[] { 0.64, 0.80, 0.00, 0.08 }
+        };
+
+        [Test]
+        public void Pacing_EveryStage_StaysInsideItsTargetBand()
+        {
+            Assert.AreEqual(PacingBands.Length, MatchStages.All.Count, "one band per stage");
+            for (int i = 0; i < MatchStages.All.Count; i++)
+            {
+                double[] band = PacingBands[i];
+                double greedy = MatchSimulator.WinRate(MatchStages.All[i], Rules(), MatchPolicies.Greedy, 200);
+                double uniform = MatchSimulator.WinRate(MatchStages.All[i], Rules(), MatchPolicies.Uniform, 200);
+
+                Assert.That(greedy, Is.InRange(band[0], band[1]), $"stage {i + 1} greedy");
+                Assert.That(uniform, Is.InRange(band[2], band[3]), $"stage {i + 1} uniform");
+            }
+        }
+
+        [Test]
+        public void Pacing_GreedyWinRate_NeverRisesFromOneStageToTheNext()
+        {
+            double previous = 1.0;
+            for (int i = 0; i < MatchStages.All.Count; i++)
+            {
+                double greedy = MatchSimulator.WinRate(MatchStages.All[i], Rules(), MatchPolicies.Greedy, 200);
+                Assert.LessOrEqual(greedy, previous + 1e-9, $"stage {i + 1} is easier than stage {i}");
+                previous = greedy;
+            }
+        }
     }
 }
