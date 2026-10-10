@@ -18,6 +18,12 @@ public static class StandaloneGcProbe
         string[] args = Environment.GetCommandLineArgs();
         string mode = null;
         bool noHud = Array.IndexOf(args, "-probe-gc-nohud") >= 0;
+        string shotName = "shot.png";
+        int shotArg = Array.IndexOf(args, "-shot-name");
+        if (shotArg >= 0 && shotArg + 1 < args.Length)
+        {
+            shotName = args[shotArg + 1];
+        }
         if (Array.IndexOf(args, "-probe-gc") >= 0 || noHud)
         {
             mode = "gc";
@@ -30,6 +36,10 @@ public static class StandaloneGcProbe
         {
             mode = "iso";
         }
+        else if (Array.IndexOf(args, "-probe-shot") >= 0)
+        {
+            mode = "shot";
+        }
 
         if (mode == null)
         {
@@ -40,6 +50,7 @@ public static class StandaloneGcProbe
         UnityEngine.Object.DontDestroyOnLoad(go);
         ProbeRunner runner = go.AddComponent<ProbeRunner>();
         runner.NoHud = noHud;
+        runner.ShotName = shotName;
         runner.Configure(mode);
     }
 }
@@ -53,6 +64,10 @@ public sealed class ProbeRunner : MonoBehaviour
 
     private string _mode;
     [System.NonSerialized] public bool NoHud;
+    [System.NonSerialized] public string ShotName = "shot.png";
+    private int _shotFrames;
+    private bool _shotTaken;
+    private int _shotQuitAt;
     private MatchController _mc;
     private ProfilerRecorder _gcRecorder;
     private long[] _gcBytes;
@@ -133,6 +148,13 @@ public sealed class ProbeRunner : MonoBehaviour
                 return;
             }
 
+            if (_mode == "shot")
+            {
+                _mc.StartLevel(4, 4242UL);
+                ResetGame();
+                return;
+            }
+
             if (_mode == "iso")
             {
                 _hud = FindAnyObjectByType<MatchHud>();
@@ -171,6 +193,10 @@ public sealed class ProbeRunner : MonoBehaviour
         else if (_mode == "iso")
         {
             StepIso();
+        }
+        else if (_mode == "shot")
+        {
+            StepShot();
         }
         else
         {
@@ -305,6 +331,81 @@ public sealed class ProbeRunner : MonoBehaviour
         File.WriteAllText(Path.Combine(dir, "iso-summary.txt"), summary.ToString());
         File.WriteAllText(Path.Combine(dir, "iso-done.txt"), "frames=" + _gcCount + "\n");
         Application.Quit();
+    }
+
+    // --- Screenshot mode: stage 5, three tiles of different symbols in the tray, one capture after the moves settle. ---
+    private void StepShot()
+    {
+        _shotFrames++;
+        if (_shotFrames <= 30)
+        {
+            return;
+        }
+
+        if (!_shotTaken)
+        {
+            if (_mc.Board.Tray.Count < 3)
+            {
+                if (_shotFrames % 20 == 0)
+                {
+                    int id = PickDistinctSymbol();
+                    if (id >= 0)
+                    {
+                        _mc.Tap(id);
+                    }
+                }
+
+                return;
+            }
+
+            if (_shotFrames < 150)
+            {
+                return;
+            }
+
+            string dir = Path.GetFullPath(Path.Combine(Application.dataPath, ".."));
+            ScreenCapture.CaptureScreenshot(Path.Combine(dir, ShotName));
+            _shotTaken = true;
+            _shotQuitAt = _shotFrames + 10;
+            return;
+        }
+
+        if (_shotFrames >= _shotQuitAt)
+        {
+            _finished = true;
+            Application.Quit();
+        }
+    }
+
+    private int PickDistinctSymbol()
+    {
+        MatchBoard board = _mc.Board;
+        IReadOnlyList<MatchTile> tray = board.Tray;
+        int total = board.TotalTiles;
+        for (int id = 0; id < total; id++)
+        {
+            if (!board.TryGetOnBoard(id, out MatchTile tile) || !board.IsFree(id))
+            {
+                continue;
+            }
+
+            bool used = false;
+            for (int i = 0; i < tray.Count; i++)
+            {
+                if (tray[i].Symbol == tile.Symbol)
+                {
+                    used = true;
+                    break;
+                }
+            }
+
+            if (!used)
+            {
+                return id;
+            }
+        }
+
+        return -1;
     }
 
     // --- Playtest mode: bots x stages x seeds, timeScale 30 ---

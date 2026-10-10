@@ -12,6 +12,9 @@ namespace PulseArena.Game
         private const float Padding = 16f;
         private const float SlideSeconds = 0.3f;     // the result panel slides in over 0.3 s (juice standard)
         private const float SlideDistance = 160f;
+        private const int WarmUpFrames = 2;
+        // Every character the HUD draws. Drawn once before the first tap (see Start), so no tap pays for a new glyph.
+        private const string WarmUpText = "Stage Score Combo Tray Left Level cleared Tray full Retry Next stage Reduce motion: on off 0123456789 /";
         private static readonly Color Ink = new Color(0.96f, 0.96f, 0.98f, 1f);
         private static readonly Color ButtonFill = new Color(0.25f, 0.75f, 0.72f, 1f);
         private static readonly Color ButtonInk = new Color(0.07f, 0.08f, 0.1f, 1f);
@@ -33,6 +36,7 @@ namespace PulseArena.Game
         private MatchState _shownState = MatchState.Playing;
         private float _slideT = 1f;
         private bool _shownReduce;
+        private int _warmFrames;
 
         // Verification fields (game time). The verification reads them; the game does not.
         public float SlideStartedAt { get; private set; } = -1f;
@@ -49,7 +53,15 @@ namespace PulseArena.Game
             root.style.paddingTop = Padding;
             root.style.paddingBottom = Padding;
 
-            _status = AddLabel(root, 28f);
+            // Top row: the status on the left, Reduce Motion in the top-right corner, clear of the board and the popups.
+            var topRow = new VisualElement();
+            topRow.style.flexDirection = FlexDirection.Row;
+            topRow.style.alignItems = Align.Center;
+            _status = AddLabel(topRow, 28f);
+            _status.style.flexGrow = 1f;
+            _motion = AddButton(topRow, "Reduce motion: off", visible: true);
+            _motion.clicked += OnToggleMotion;
+            root.Add(topRow);
             root.Add(Spacer(1f));
 
             _result = new VisualElement();
@@ -71,18 +83,39 @@ namespace PulseArena.Game
 
             root.Add(Spacer(2f));
 
-            var motionRow = new VisualElement();
-            motionRow.style.flexDirection = FlexDirection.Row;
-            motionRow.style.justifyContent = Justify.Center;
-            _motion = AddButton(motionRow, "Reduce motion: off", visible: true);
-            _motion.clicked += OnToggleMotion;
-            root.Add(motionRow);
+            // Pre-warm. UI Toolkit builds the glyphs for a text the first time that text is laid out, and that build is the
+            // expensive frame (the standalone spikes, T3 notes). So every label and button draws WarmUpText for two frames,
+            // before the first tap. Update puts the real text back when the warm-up ends.
+            _status.text = WarmUpText;
+            _message.text = WarmUpText;
+            _motion.text = WarmUpText;
+            _retry.text = WarmUpText;
+            _next.text = WarmUpText;
+            _retry.style.display = DisplayStyle.Flex;
+            _next.style.display = DisplayStyle.Flex;
+            _warmFrames = WarmUpFrames;
         }
 
         private void Update()
         {
             if (_match == null || _match.Board == null || _status == null)
             {
+                return;
+            }
+
+            if (_warmFrames > 0)
+            {
+                _warmFrames--;
+                if (_warmFrames == 0)
+                {
+                    _message.text = string.Empty;
+                    _retry.text = "Retry";
+                    _next.text = "Next stage";
+                    _motion.text = _match.ReduceMotion ? "Reduce motion: on" : "Reduce motion: off";
+                    _retry.style.display = DisplayStyle.None;
+                    _next.style.display = DisplayStyle.None;
+                }
+
                 return;
             }
 

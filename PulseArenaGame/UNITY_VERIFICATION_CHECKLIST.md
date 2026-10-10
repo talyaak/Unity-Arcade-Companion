@@ -93,7 +93,7 @@ Game view only advances while the Editor is the active window; `Application.runI
 - [x] "+100" popup shows in the message label after a clear (superseded in T3: the popup is now a world-space TextMesh, and the message label shows results only)
 - [x] Tray moves keep the material count flat: `Resources.FindObjectsOfTypeAll<Material>().Length` 99 before and after three tray moves
 - [x] Console: no game errors. Two `/api/exec` timeouts from the MCP bridge during eval calls, unrelated to the game
-- [ ] GC Alloc 0 B per frame during Playing (Profiler). **Not verified:** the Profiler view was not captured
+- [ ] GC Alloc 0 B per frame during Playing (Profiler). **Standalone measure:** see the T3 item below. The Editor's 9 KB baseline is not the game's
 - [ ] Buttons and taps on a touch device. **Not verified:** no device (T7)
 - [ ] Reduce Motion disables USS transitions. **Nothing to disable yet:** the HUD has no transitions. The Reduce Motion button is in T3 (see the Juice section)
 
@@ -110,13 +110,19 @@ Game view only advances while the Editor is the active window; `Application.runI
 - [x] Loss: tray red flash 0.301 s, drop 0.500 units in 0.498 s (design 0.3 s, 0.5 units). **Deviation:** the fade is a shrink to zero, not an alpha fade (no transparent material). Screenshot `loss-flash.png`
 - [x] Last-slot triple in the scene: tray 6 to 4 on a triple, state Playing, no loss (`last-slot-triple.txt`)
 - [x] Reduce Motion on: no shake (peak 0.000), no hit-stop (0.006 s), no confetti (0 on a win); the red flash stays (0.153 s). **Not confirmed:** the camera nudge under Reduce Motion (the combo reached in that run was not logged)
-- [ ] GC Alloc 0 B per frame during Playing (standalone Development build, `docs/evidence/T3/gc-standalone.txt`). **Partly met:** idle and animation frames are 0 B at the median and p90. **Not met:** the frame after each tap is about 390 B, and six spike frames are 593 KB to 1.47 MB. With the HUD off, no frame is over 50 KB, so the HUD's UI Toolkit label updates cause both. The architect decides whether that counts as event work (D11)
+- [ ] GC Alloc 0 B per frame during Playing (standalone Development build, `docs/evidence/T3/gc-standalone-prewarm.txt`). **Met for steady frames:** idle and animation frames are 0 B at the median and p90. **Not met, accepted as event work (D12):** the frame after each tap is about 390 B, from the HUD's label updates. The six 0.6 to 1.5 MB spikes are gone after the HUD pre-warm (before the pre-warm: `docs/evidence/T3/gc-standalone.txt`). Android device numbers are T7
 - [ ] Tap squash (0.12 s, to 0.9 and back). **Not measured**
 - [ ] Shared materials only: the red material is shared; a material count across T3 taps was not re-measured
 - [ ] Touch on a device (T7). Feel (playtest, T5). Audio hooks are silent by design (`AudioCues`)
+- [x] Reduce Motion button moved to the top row, clear of the popup area (screenshots `docs/evidence/T9/hud-16x9.png` and `hud-9x16.png`)
 - [ ] Framing at FramingMargin 1.10: all points inside at 16:9 and 9:16, margins 4.5% (bottom, 16:9) and 4.9% (sides, 9:16) (`docs/evidence/T2/framing-margin110.txt`). **Note:** the popup can sit under the bottom Reduce Motion button at 1280 x 720 (`popup-over-tray.png`)
 
 ## Playtest (T5; bot runs only, `docs/playtests/2026-10-11.md`)
 - [x] Bots play stages 1 to 5 in a standalone build: 500 games (greedy and uniform, seeds 1 to 50). Every win rate is inside its D7 band
 - [x] No tile stays on screen after a win: checked 1 s of game time after each of the 327 wins
 - [ ] Human playtest. **Not done:** every run above is a bot run. Blocked-tap feedback, popup readability and the confusing moments in the log need a person
+
+## Human playtest (T9; needs the user)
+- [ ] Standalone release build of the Match scene: `PulseArenaGame/Builds/T9-Playtest/PulseArenaGame.exe` (git-ignored; Build Settings unchanged). Smoke-tested: starts, responds, no exceptions in the log
+- [ ] Player note for the playtester: `docs/playtests/T9-player-note.md`
+- [ ] Human playtest of stages 1 to 5, written up in `docs/playtests/<date>.md`. **Not done**

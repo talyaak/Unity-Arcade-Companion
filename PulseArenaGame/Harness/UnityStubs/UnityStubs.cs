@@ -417,10 +417,12 @@ namespace UnityEngine.UIElements
     public enum FlexDirection { Column, Row }
     public enum Justify { FlexStart, Center }
     public enum PickingMode { Position, Ignore }
+    public enum Align { Auto, FlexStart, Center, FlexEnd, Stretch }
 
     public sealed class IStyle
     {
         public DisplayStyle display;
+        public Align alignItems;
         public float flexGrow;
         public FlexDirection flexDirection;
         public Justify justifyContent;
