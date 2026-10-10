@@ -14,6 +14,10 @@ namespace UnityEngine
 
     public class Component : Object
     {
+        public T GetComponent<T>() where T : Component
+        {
+            return null;
+        }
     }
 
     public class Behaviour : Component
@@ -58,6 +62,76 @@ namespace UnityEngine
     public sealed class HeaderAttribute : Attribute
     {
         public HeaderAttribute(string header)
+        {
+        }
+    }
+
+    public struct Rect
+    {
+        public Rect(float x, float y, float width, float height)
+        {
+            this.x = x;
+            this.y = y;
+            this.width = width;
+            this.height = height;
+        }
+
+        public float x;
+        public float y;
+        public float width;
+        public float height;
+    }
+
+    public struct Color
+    {
+        public Color(float r, float g, float b, float a)
+        {
+            this.r = r;
+            this.g = g;
+            this.b = b;
+            this.a = a;
+        }
+
+        public float r;
+        public float g;
+        public float b;
+        public float a;
+
+        public static Color white => new Color(1f, 1f, 1f, 1f);
+    }
+
+    public class Texture2D : Object
+    {
+        public static Texture2D whiteTexture => new Texture2D();
+    }
+
+    public static class Screen
+    {
+        public static int width = 1080;
+        public static int height = 1920;
+    }
+
+    public static class GUI
+    {
+        public static Color color = Color.white;
+
+        public static bool Button(Rect rect, string text)
+        {
+            return false;
+        }
+
+        public static void Label(Rect rect, string text)
+        {
+        }
+
+        public static void DrawTexture(Rect rect, Texture2D texture)
+        {
+        }
+    }
+
+    public sealed class RequireComponentAttribute : Attribute
+    {
+        public RequireComponentAttribute(Type requiredComponent)
         {
         }
     }

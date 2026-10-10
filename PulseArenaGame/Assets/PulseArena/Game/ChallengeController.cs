@@ -14,11 +14,18 @@ namespace PulseArena.Game
         [SerializeField] private float _maxFrameSeconds = 0.1f;
 
         private ChallengeSession _session;
+        private ChallengeConfig _runConfig;
         private readonly List<TapRecord> _tapLog = new List<TapRecord>();
         private bool _pausedByApp;
         private bool _pausedByFocus;
 
         public ChallengeSession Session => _session;
+
+        /// The config the current session was built from. The HUD uses it for lane count and multipliers.
+        public ChallengeConfig RunConfig => _runConfig;
+
+        /// Seed of the most recent run. Stored so the result can be replay-checked.
+        public ulong LastSeed { get; private set; }
 
         /// Accepted taps (Hit or Empty) for the current run, for ReplayVerifier.Verify.
         public IReadOnlyList<TapRecord> TapLog => _tapLog;
@@ -34,7 +41,8 @@ namespace PulseArena.Game
                 return;
             }
 
-            _session = new ChallengeSession(_config.ToConfig());
+            _runConfig = _config.ToConfig();
+            _session = new ChallengeSession(_runConfig);
         }
 
         /// Starts a run. The seed is kept in the result so the same run can be replayed and checked.
@@ -46,7 +54,13 @@ namespace PulseArena.Game
             }
 
             _tapLog.Clear();
+            LastSeed = seed;
             return true;
+        }
+
+        public bool Quit()
+        {
+            return _session != null && _session.Quit();
         }
 
         public TapResult Tap(int lane)

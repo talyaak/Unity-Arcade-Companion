@@ -18,6 +18,7 @@
   <ItemGroup>
     <Compile Include="../Assets/PulseArena/Core/**/*.cs" Link="Core/%(RecursiveDir)%(Filename)%(Extension)" />
     <Compile Include="../Assets/PulseArena/Tests/EditMode/**/*.cs" Link="Tests/%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="PulseArenaPerfTests.cs" />
   </ItemGroup>
 
   <ItemGroup>
