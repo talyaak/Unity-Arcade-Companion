@@ -72,3 +72,4 @@ frame time and input latency.
 - 2026-10-11: Builder started T1 (status doing).
 - 2026-10-11: Architect: drift check clean (no money terms outside prohibitions). Created docs/DECISIONS.md (D1-D7). T4 decided UI Toolkit (D6). T5 bands in D7 plus 2 Core tests (109/109 pass; run dotnet with DOTNET_ROLL_FORWARD=Major). T6 spec and ledger written, awaiting user approval.
 
+- 2026-10-11: Architect review of builder commit 3a36505 (Input System, Match scene, Tile material): progress note, not a ticket handoff. T1 stays doing (no evidence path, Play Mode not run). Claims match the commit body. Core tests re-run by builder at 109. Spot-check deferred: needs the Editor, which the builder owns during T1. Next for builder: run T1 in Play Mode, put evidence under docs/evidence/T1/, then set T1 to review.
