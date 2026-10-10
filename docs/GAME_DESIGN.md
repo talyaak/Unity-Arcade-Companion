@@ -34,7 +34,7 @@ Starting values. Tune them in playtests and record any change in `docs/DECISIONS
 - Blocked tap: horizontal shake for 0.3 s, amplitude 0.12 units, with a brief red tint (0.15 s).
 - Camera nudge on clears at combo 3 or more: amplitude at most 0.05 units, 0.15 s.
 - Win: confetti in waves, at most 60 particles in total and never more than 40 live at once. The result panel slides in over 0.3 s.
-- Loss: tray slots flash red for 0.3 s. Remaining tray tiles drop 0.5 units and fade.
+- Loss: tray slots flash red for 0.3 s. Remaining tray tiles drop 0.5 units and shrink to zero (an alpha fade needs a transparent material, which waits for the art stage; D11).
 - Easing: nothing the player watches moves linearly. Use ease-out for arrivals and ease-in for departures.
 
 **Audio (placeholder)**
@@ -62,4 +62,5 @@ Starting values. Tune them in playtests and record any change in `docs/DECISIONS
 
 Money of any kind, cash, prizes, sweepstakes, loot boxes with random paid items, licensed or third-party art or audio
 without a complete ledger row, social features, and network features.
+
 

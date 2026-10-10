@@ -99,3 +99,9 @@ device run (T7) showing Built-in cannot hold frame time. Then add a new decision
 ## D10: CoreTests baseline. Status: decided (2026-10-11)
 
 The current count is 109 (107 plus the two pacing tests). Older text that says 107 is out of date.
+
+## D11: T3 deviations. Status: decided (2026-10-11)
+
+- Loss "fade" is a shrink to zero for now. Reason: an alpha fade needs a transparent material, which breaks the shared-material rule (D3) until the art stage. Revisit with the art stage.
+- GC Alloc 0 B per frame is **not yet met or disproved**. In the Editor the baseline is 9,013 B per frame even with every match component disabled, so the Editor overhead hides the game. The target stays. It is measured in a standalone development build; tap frames spike (up to about 611 KB) and need a look there.
+- FramingMargin stays at 1.10 (4.5% bottom at 16:9, 4.9% sides at 9:16). Safe-area handling is revisited on the device run (T7).
