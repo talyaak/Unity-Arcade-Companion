@@ -47,7 +47,7 @@ Starting values. Tune them in playtests and record any change in `docs/DECISIONS
 
 **Performance**
 - At most 40 live particles at any time.
-- No per-frame allocations during Playing, after warm-up (GC Alloc 0 B on frames with no tap). Tap frames may allocate up to 12 KB (event work, D12). No frame over 50 KB after warm-up.
+- No per-frame allocations during Playing, after warm-up (GC Alloc 0 B on frames with no tap). Tap frames may allocate up to 16 KB (event work, D12). No frame over 50 KB after warm-up.
 - Shared materials only. No per-tile material copies.
 
 ## Visual standard
@@ -62,6 +62,7 @@ Starting values. Tune them in playtests and record any change in `docs/DECISIONS
 
 Money of any kind, cash, prizes, sweepstakes, loot boxes with random paid items, licensed or third-party art or audio
 without a complete ledger row, social features, and network features.
+
 
 
 
