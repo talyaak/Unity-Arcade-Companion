@@ -44,7 +44,7 @@ Unity version under test: _not yet opened_
 - [ ] Companion package (`UnityLearningCompanion/`), including its Editor-only assemblies and LLM provider abstraction
 
 ## Match MVP (new, not yet run in Unity)
-- [ ] Menu Pulse Arena > Build Match Scene runs without errors and adds `Assets/PulseArena/Scenes/Match.unity` to Build Settings
+- [x] Menu Pulse Arena > Build Match Scene runs without errors and adds `Assets/PulseArena/Scenes/Match.unity` to Build Settings (Unity 6000.4.0f1, run through the `menu` MCP tool; Console 0 errors; `get_build_settings` lists Challenge and Match)
 - [ ] Play: the board shows 3D tiles, stacked by cell, with covered tiles dimmed and free tiles bright
 - [ ] Tapping a free tile moves it to the tray in about 0.25 s; the tray lays out in order
 - [ ] Tapping a covered tile shakes it and changes nothing else
@@ -55,10 +55,23 @@ Unity version under test: _not yet opened_
 - [ ] Touch on a real device behaves like mouse (deferred)
 - [ ] Feel criteria in `docs/MATCH_MVP.md` judged by a person (not automatable)
 
+## T1 run notes (2026-10-11, Unity 6000.4.0f1, Play Mode, evidence in `docs/evidence/T1/`)
+Taps in this run were sent with `MatchController.Tap(tileId)` through the `eval` MCP tool, **not** through the Pointer.
+Reason: Input System 1.20.1 is installed and `activeInputHandler` is 2 (Both) on disk, but the Editor has not been restarted,
+so the new backend is inactive (`simulate_pointer` refused: "installed but inactive"). Restarting was denied by the permission
+classifier and needs the user.
+What was seen through that path (outcomes and positions read from Core and the scene, plus screenshots):
+- Blocked tap on a covered tile returned `Blocked` and changed nothing; a free tap returned `Moved`. Tile 4 settled at (-3.00, 0.50, -4.60), tray slot 0 by the controller's layout (`01-after-first-tap-tile-in-tray.png`).
+- A triple returned `Cleared` (score 100, combo 1, tray 0). The three views were removed (TileView count equalled tiles left on the board).
+- Stage 1 played to `Won` (score 700, combo 3, 0 left); stage 5 played to `Lost` with 7 in the tray (`03-stage5-lost-tray-full.png`).
+- Console: 0 errors, 0 warnings during Play (one logged error was a mistaken `find_assets` call of mine, not game code).
+Not seen: the 0.25 s move timing, the shake animation, the `+points` popup, the HUD text and the Retry / Next stage buttons (the IMGUI HUD does not appear in the screenshot tool's capture, and IMGUI buttons need real input), the last-slot triple case, and the dimmed/bright tint comparison. Those boxes stay unticked.
+Game view only advances while the Editor is the active window; `Application.runInBackground = true` was set from eval for this Play session only (not a project setting).
+
 ## Match input and materials (code written, not yet run in Unity)
-- [ ] Input System package installed in Package Manager; Active Input Handling set to Both (Player Settings); no legacy Input errors in the Console
+- [ ] Input System package installed in Package Manager; Active Input Handling set to Both (Player Settings); no legacy Input errors in the Console. **Partly done:** package 1.20.1 installed and the Match compile error CS0234 is gone; `activeInputHandler: 2` is saved, but the backend is not active until an Editor restart
 - [ ] Tap a tile with the mouse in Play Mode: it moves to the tray (the tap goes through Pointer, not the legacy Input class)
-- [ ] Build Match Scene creates `Assets/PulseArena/Materials/Tile.mat`, and the controller's Tile Material field is set
+- [x] Build Match Scene creates `Assets/PulseArena/Materials/Tile.mat`, and the controller's Tile Material field is set (read back with eval: `_tileMaterial` = `Assets/PulseArena/Materials/Tile.mat`, Built-in Standard shader)
 - [ ] Tiles show the palette colours; covered tiles are dimmed; stacks and the tray look as before
-- [ ] Profiler (Rendering): material count stays flat across taps, with no new material per tap
+- [x] Material count stays flat across taps: `Resources.FindObjectsOfTypeAll<Material>().Length` was 83 at stage start and 83 after a move and a triple clear. This is an object count, not the Profiler Rendering view
 - [ ] Touch on a real device (deferred)
