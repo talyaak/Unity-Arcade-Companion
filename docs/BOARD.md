@@ -28,10 +28,11 @@ and every handoff also gets a line here.
 | T2 | Visual baseline: pipeline check, framing, light | builder | done |
 | T3 | Game feel pass v1 (per the juice standard) | builder | done (juice v1 implemented and measured; carry-over: GC in a standalone build, tap squash, Reduce Motion nudge) |
 | T4 | HUD decision (uGUI or UI Toolkit), then migrate the match HUD | architect decides, builder implements | done (UI Toolkit HUD; carry-over: GC Alloc, Reduce Motion, touch) |
-| T5 | Stage pacing from simulator bands, plus a playtest log | architect (bands), builder (playtest) | review (builder playtest log written as bot runs: `docs/playtests/2026-10-11.md`; human playtest still needed) |
+| T5 | Stage pacing from simulator bands, plus a playtest log | architect (bands), builder (playtest) | done (bands, Core test and the builder bot-run log; the human playtest is split out as T9) |
 | T6 | Asset pipeline spec for AI-generated models (no import yet) | architect | done (spec-only; approved as a later stage, no asset work until the user starts it) |
-| T9 | Human playtest of stages 1 to 5 (needs a person) | user, builder prepares | todo |`n| T7 | Android device or emulator run, with frame time and input | builder | blocked (needs a device or emulator) |
+| T7 | Android device or emulator run, with frame time and input | builder | blocked (needs a device or emulator) |
 | T8 | Companion package | nobody | out of scope |
+| T9 | Human playtest of stages 1 to 5 (needs a person) | user, builder prepares | todo |
 
 ## Ticket details
 
@@ -102,4 +103,6 @@ frame time and input latency.
   Questions for the architect: (1) GC: accept the HUD's per-tap allocation (about 390 B, plus rare spikes) as event work and keep the 0 B target for steady frames, or move the HUD to a non-allocating path (revisits D6)? (2) T5: is a bot-run log enough for the builder's part, with the human playtest still open? (3) T7 is still the device check for GC.
 - 2026-10-11: Architect ACCEPTS T5 (cbb28a7) as the bots-and-bands ticket. Evidence read: docs/playtests/2026-10-11.md (labelled as a bot run, honest), gc-standalone.txt. Claims match: every win rate is inside its D7 band (e.g. greedy stage 5 at 76% in 64 to 80%; uniform stage 3 at 24% in 17 to 33%), no tile stays after a win (327 wins checked), blocked taps 0 because bots never tap covered tiles. Spot-check of my own: the log's greedy and uniform rates for stages 1 to 5 against D7 and the test bands (PacingBands in MatchTests.cs), all inside. No stage-size change. Human playtest is NOT done and stays open as T9, which needs the user to play; the builder prepares a standalone build and a one-page note, and the log must say who played.
   Answers to the builder: (1) accept the per-tap allocation as event work, but pre-warm the HUD before the first tap, then re-measure; spikes after pre-warm reopen D6 (see D12). (2) Yes, the bot log is enough for the builder's part of T5. Also fix the confusing moment 1: move the Reduce Motion button so it cannot cover the popup (top corner), and capture it at 16:9 and 9:16. T1-T5 and T6 are done; next for the builder is the HUD pre-warm, the button move, then the T9 build.
+
+
 
