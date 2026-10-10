@@ -3,6 +3,7 @@ using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UIElements;
 
 namespace PulseArena.Tooling
 {
@@ -17,6 +18,8 @@ namespace PulseArena.Tooling
         private const string MatchScenePath = SceneFolder + "/Match.unity";
         private const string MaterialFolder = "Assets/PulseArena/Materials";
         private const string TileMaterialPath = MaterialFolder + "/Tile.mat";
+        private const string UiFolder = "Assets/PulseArena/UI";
+        private const string PanelSettingsPath = UiFolder + "/MatchPanelSettings.asset";
 
         [MenuItem("Pulse Arena/Build Challenge Scene")]
         public static void Build()
@@ -68,6 +71,15 @@ namespace PulseArena.Tooling
             serialized.FindProperty("_tileMaterial").objectReferenceValue = EnsureTileMaterial();
             serialized.ApplyModifiedPropertiesWithoutUndo();
 
+            // The HUD is one UIDocument with one PanelSettings. MatchHud builds its panel in Start.
+            var hudObject = new GameObject("Match HUD");
+            UIDocument document = hudObject.AddComponent<UIDocument>();
+            document.panelSettings = EnsurePanelSettings();
+            MatchHud hud = hudObject.AddComponent<MatchHud>();
+            var hudSerialized = new SerializedObject(hud);
+            hudSerialized.FindProperty("_match").objectReferenceValue = controller;
+            hudSerialized.ApplyModifiedPropertiesWithoutUndo();
+
             // Look down at the board from the front, so the tray sits near the camera and the stacks are visible.
             Camera camera = Camera.main;
             if (camera != null)
@@ -111,6 +123,26 @@ namespace PulseArena.Tooling
             AssetDatabase.SaveAssets();
 
             Debug.Log($"Pulse Arena: built {MatchScenePath}.");
+        }
+
+        // One PanelSettings for the match HUD. It scales with the screen and uses a 1080 x 1920 reference, so landscape and
+        // portrait both fit. Created once and reused on later builds.
+        private static PanelSettings EnsurePanelSettings()
+        {
+            EnsureFolder(UiFolder);
+            PanelSettings existing = AssetDatabase.LoadAssetAtPath<PanelSettings>(PanelSettingsPath);
+            if (existing != null)
+            {
+                return existing;
+            }
+
+            var settings = ScriptableObject.CreateInstance<PanelSettings>();
+            settings.scaleMode = PanelScaleMode.ScaleWithScreenSize;
+            settings.referenceResolution = new Vector2Int(1080, 1920);
+            settings.screenMatchMode = PanelScreenMatchMode.MatchWidthOrHeight;
+            settings.match = 0.5f;
+            AssetDatabase.CreateAsset(settings, PanelSettingsPath);
+            return settings;
         }
 
         // One base material asset for tiles. Copied from the default primitive material, so it works in any pipeline.

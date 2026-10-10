@@ -34,7 +34,7 @@ Unity version under test: _not yet opened_
 
 ## Match scene framing and light (T2; Unity 6000.4.0f1, Play Mode, Editor; evidence in docs/evidence/T2/)
 - [x] Pulse Arena > Build Match Scene leaves exactly one directional light (soft shadows, rotation 50, -30, 0), read back with `FindObjectsByType<Light>()`
-- [x] Stage 5 with three tiles in the tray (6x6, stack height 5, 7-slot tray row, popup headroom): every projected content point and every tray slot corner is inside the viewport at 16:9 and 9:16 (`framing.txt`). Content fills 46% of the width at 16:9 and 88% at 9:16; at 16:9 it is limited by height
+- [x] Stage 5 with three tiles in the tray (6x6, stack height 5, 7-slot tray row, popup headroom): every projected content point and every tray slot corner is inside the viewport at 16:9 and 9:16. At the T2 tray pitch (1.0) the content filled 46% of the width at 16:9 and 88% at 9:16 (`framing.txt`). At the current tray pitch (1.5, tiles 0.9 units) it fills 61% at 16:9 and 95% at 9:16 (`framing-tile09.txt`)
 - [x] Render pipeline is Built-in (`graphics-settings.txt`)
 - [ ] Popup and HUD framing. **Not verified.** Render-texture captures do not include IMGUI; waits for T4 (HUD) and T3 (world-space popup).
 - [ ] Framing on a real window resize (`Update` refit when Screen size changes). **Not verified**; only `FitCamera` with a forced aspect was run.
@@ -57,7 +57,7 @@ Unity version under test: _not yet opened_
 - [ ] Tapping a covered tile shakes it and changes nothing else
 - [ ] Three of a kind clear, with a `+points` popup and the combo shown in the HUD
 - [ ] A tile that completes a triple in the last tray slot clears (no loss)
-- [ ] Filling the tray without a triple shows "Tray full" with a Retry button that works
+- [x] Filling the tray without a triple shows "Tray full" with a Retry button that works (stage 5 lost with 7 in the tray; Retry pressed with `simulate_pointer` restarted stage 5 with an empty tray; see the T4 section)
 - [ ] Clearing the board shows "Level cleared" with a Next stage button that works
 - [ ] Touch on a real device behaves like mouse (deferred)
 - [ ] Feel criteria in `docs/MATCH_MVP.md` judged by a person (not automatable)
@@ -77,8 +77,22 @@ Game view only advances while the Editor is the active window; `Application.runI
 
 ## Match input and materials (code written, not yet run in Unity)
 - [ ] Input System package installed in Package Manager; Active Input Handling set to Both (Player Settings); no legacy Input errors in the Console. **Partly done:** package 1.20.1 installed and the Match compile error CS0234 is gone; `activeInputHandler: 2` is saved, but the backend is not active until an Editor restart
-- [ ] Tap a tile with the mouse in Play Mode: it moves to the tray (the tap goes through Pointer, not the legacy Input class)
+- [x] Tap a tile with the mouse in Play Mode: it moves to the tray (the tap goes through Pointer, not the legacy Input class). Seen with `simulate_pointer` press on a free tile, tray 0 to 1. Device-level pointer input, not a physical mouse
 - [x] Build Match Scene creates `Assets/PulseArena/Materials/Tile.mat`, and the controller's Tile Material field is set (read back with eval: `_tileMaterial` = `Assets/PulseArena/Materials/Tile.mat`, Built-in Standard shader)
 - [ ] Tiles show the palette colours; covered tiles are dimmed; stacks and the tray look as before
 - [x] Material count stays flat across taps: `Resources.FindObjectsOfTypeAll<Material>().Length` was 83 at stage start and 83 after a move and a triple clear. This is an object count, not the Profiler Rendering view
 - [ ] Touch on a real device (deferred)
+
+## Match HUD (T4; Unity 6000.4.0f1, Play Mode, Editor; evidence in docs/evidence/T4/)
+- [x] No `OnGUI` in the match scene: `MatchController` no longer has one. The scene's components are MatchController, MatchHud, Camera, Light and tiles (TileView). Checked by code, not by a Unity search
+- [x] One `UIDocument` and one `PanelSettings` (`Assets/PulseArena/UI/MatchPanelSettings.asset`, scale with screen, 1080 x 1920 reference). Read back in Play Mode
+- [x] HUD text reads "Stage 5   Score 0   Combo 0   Tray 0/7   Left 47" from the label tree (read with eval, stage 1 shown in `hud-playing.png`)
+- [x] "Level cleared" and a "Next stage" button at Won (`hud-won.png`); "Tray full" and a "Retry" button at Lost (`hud-lost.png`). Both buttons are hidden while playing
+- [x] Next stage button pressed with `simulate_pointer` (down, then up): stage 2 started, score 0, board reset
+- [x] Retry button pressed with `simulate_pointer`: stage 5 restarted, tray 0, buttons hidden
+- [x] "+100" popup shows in the message label after a clear (read through the HUD's Update run from eval, while the popup was showing)
+- [x] Tray moves keep the material count flat: `Resources.FindObjectsOfTypeAll<Material>().Length` 99 before and after three tray moves
+- [x] Console: no game errors. Two `/api/exec` timeouts from the MCP bridge during eval calls, unrelated to the game
+- [ ] GC Alloc 0 B per frame during Playing (Profiler). **Not verified:** the Profiler view was not captured
+- [ ] Buttons and taps on a touch device. **Not verified:** no device (T7)
+- [ ] Reduce Motion disables USS transitions. **Nothing to disable yet:** the HUD has no transitions; the Reduce Motion toggle comes with T3

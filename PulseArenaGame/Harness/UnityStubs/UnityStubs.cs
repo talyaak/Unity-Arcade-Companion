@@ -372,6 +372,7 @@ namespace UnityEngine.InputSystem
     public sealed class ButtonControl
     {
         public bool wasPressedThisFrame => false;
+        public bool isPressed => false;
     }
 
     public sealed class Vector2Control
@@ -388,5 +389,74 @@ namespace UnityEngine.InputSystem
 
         public ButtonControl press = new ButtonControl();
         public Vector2Control position = new Vector2Control();
+    }
+}
+
+namespace UnityEngine
+{
+    public enum TextAnchor
+    {
+        UpperLeft,
+        MiddleLeft,
+        MiddleCenter
+    }
+}
+
+namespace UnityEngine.UIElements
+{
+    // Compile-only stand-ins for the UI Toolkit calls used by MatchHud.
+    public enum DisplayStyle { Flex, None }
+    public enum FlexDirection { Column, Row }
+    public enum Justify { FlexStart, Center }
+    public enum PickingMode { Position, Ignore }
+
+    public sealed class IStyle
+    {
+        public DisplayStyle display;
+        public float flexGrow;
+        public FlexDirection flexDirection;
+        public Justify justifyContent;
+        public float paddingLeft;
+        public float paddingRight;
+        public float paddingTop;
+        public float paddingBottom;
+        public float marginLeft;
+        public float marginRight;
+        public float marginBottom;
+        public float fontSize;
+        public Color color;
+        public Color backgroundColor;
+        public TextAnchor unityTextAlign;
+    }
+
+    public class VisualElement
+    {
+        public readonly IStyle style = new IStyle();
+        public PickingMode pickingMode = PickingMode.Position;
+
+        public void Add(VisualElement child)
+        {
+        }
+    }
+
+    public class Label : VisualElement
+    {
+        public string text;
+    }
+
+    public class Button : VisualElement
+    {
+        public string text;
+        public event System.Action clicked;
+    }
+
+    public class UIDocument : MonoBehaviour
+    {
+        public PanelSettings panelSettings;
+        public VisualElement rootVisualElement = new VisualElement();
+    }
+
+    public class PanelSettings : ScriptableObject
+    {
     }
 }

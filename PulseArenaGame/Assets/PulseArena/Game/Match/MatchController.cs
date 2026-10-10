@@ -12,7 +12,7 @@ namespace PulseArena.Game
     {
         private const float CellSpacing = 1.15f;
         private const float TileHeight = 0.95f;
-        private const float TraySpacing = 1.0f;
+        private const float TraySpacing = 1.5f;      // wider than the board pitch: the tops of tall primitives look about 1.6x wider from the camera
         private const float TrayY = 0.5f;
         private const float TrayZ = -4.6f;
         private const float MaxFrameSeconds = 0.1f;
@@ -61,9 +61,27 @@ namespace PulseArena.Game
         private int _maxStack;
         private int _fitWidth;
         private int _fitHeight;
+        private bool _pointerWasDown;
         private readonly List<Vector3> _fitPoints = new List<Vector3>();
 
         public MatchBoard Board => _board;
+        public int StageNumber => _stageIndex + 1;
+        public int TrayCapacity => _rules.TrayCapacity;
+
+        /// The popup text while it is showing, otherwise empty.
+        public string PopupText => _popupLeft > 0f ? _popup : string.Empty;
+
+        /// Restarts the current stage with a new seed. Called by the HUD's Retry button.
+        public void Retry()
+        {
+            StartLevel(_stageIndex, (ulong)DateTime.UtcNow.Ticks);
+        }
+
+        /// Starts the next stage, wrapping after the last one. Called by the HUD's Next stage button.
+        public void NextStage()
+        {
+            StartLevel((_stageIndex + 1) % MatchStages.All.Count, (ulong)DateTime.UtcNow.Ticks);
+        }
 
         private void Start()
         {
@@ -184,10 +202,20 @@ namespace PulseArena.Game
         }
 
         // The Input System's Pointer covers mouse, pen and touch, so the same code works in the Editor and on a phone.
+        // A tap is the first frame in which the press is down. The edge comes from isPressed, because during the T1 Editor
+        // checks Update never saw wasPressedThisFrame, while isPressed changed as expected.
         private void HandlePointer()
         {
             Pointer pointer = Pointer.current;
-            if (pointer == null || !pointer.press.wasPressedThisFrame || Camera.main == null)
+            if (pointer == null)
+            {
+                return;
+            }
+
+            bool down = pointer.press.isPressed;
+            bool pressedNow = down && !_pointerWasDown;
+            _pointerWasDown = down;
+            if (!pressedNow || Camera.main == null)
             {
                 return;
             }
@@ -298,43 +326,6 @@ namespace PulseArena.Game
             }
 
             return max;
-        }
-
-        private void OnGUI()
-        {
-            if (_board == null)
-            {
-                return;
-            }
-
-            float width = Screen.width;
-            float height = Screen.height;
-            GUI.Label(new Rect(16f, 16f, width - 32f, 40f),
-                $"Stage {_stageIndex + 1}   Score {_board.Score}   Combo {_board.Combo}   " +
-                $"Tray {_board.Tray.Count}/{_rules.TrayCapacity}   Left {_board.RemainingOnBoard}");
-
-            if (_popupLeft > 0f)
-            {
-                GUI.Label(new Rect(16f, 56f, width - 32f, 40f), _popup);
-            }
-
-            var center = new Rect((width - 240f) / 2f, height * 0.8f, 240f, 60f);
-            if (_board.State == MatchState.Won)
-            {
-                GUI.Label(new Rect(16f, height * 0.5f, width - 32f, 40f), "Level cleared");
-                if (GUI.Button(center, "Next stage"))
-                {
-                    StartLevel((_stageIndex + 1) % MatchStages.All.Count, (ulong)DateTime.UtcNow.Ticks);
-                }
-            }
-            else if (_board.State == MatchState.Lost)
-            {
-                GUI.Label(new Rect(16f, height * 0.5f, width - 32f, 40f), "Tray full");
-                if (GUI.Button(center, "Retry"))
-                {
-                    StartLevel(_stageIndex, (ulong)DateTime.UtcNow.Ticks);
-                }
-            }
         }
 
         private void OnDestroy()
