@@ -35,8 +35,15 @@ namespace PulseArena.Tooling
             root.AddComponent<ChallengeHud>();
 
             var serialized = new SerializedObject(controller);
-            serialized.FindProperty("_config").objectReferenceValue = config;
+            SerializedProperty configProperty = serialized.FindProperty("_config");
+            configProperty.objectReferenceValue = config;
             serialized.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(controller);
+
+            if (configProperty.objectReferenceValue == null)
+            {
+                Debug.LogError("Pulse Arena: failed to assign ChallengeConfigAsset to ChallengeController._config.");
+            }
 
             EditorSceneManager.SaveScene(scene, ScenePath);
             AddToBuildSettings(ScenePath);

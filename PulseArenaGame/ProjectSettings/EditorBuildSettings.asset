@@ -4,5 +4,8 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
+  m_Scenes:
+  - enabled: 1
+    path: Assets/PulseArena/Scenes/Challenge.unity
+    guid: 6cd270b48dc92fa48ab20ce1d55b127f
   m_configObjects: {}
