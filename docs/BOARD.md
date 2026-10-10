@@ -26,7 +26,7 @@ and every handoff also gets a line here.
 |---|---|---|---|
 | T1 | Verify the match play loop in Unity | builder | done (loop verified; carry-over items go to T3) |
 | T2 | Visual baseline: pipeline check, framing, light | builder | done |
-| T3 | Game feel pass v1 (per the juice standard) | builder | todo |
+| T3 | Game feel pass v1 (per the juice standard) | doing | todo |
 | T4 | HUD decision (uGUI or UI Toolkit), then migrate the match HUD | architect decides, builder implements | done (UI Toolkit HUD; carry-over: GC Alloc, Reduce Motion, touch) |
 | T5 | Stage pacing from simulator bands, plus a playtest log | architect (bands), builder (playtest) | doing (bands + Core test done, D7; builder playtest log pending) |
 | T6 | Asset pipeline spec for AI-generated models (no import yet) | architect | done (spec-only; approved as a later stage, no asset work until the user starts it) |
@@ -88,4 +88,4 @@ frame time and input latency.
 - 2026-10-11: Architect ACCEPTS T4 (6ff85c2) and T1. Evidence read: docs/evidence/T4/ (hud-playing, hud-won, hud-lost) and docs/evidence/T1/ (4 screenshots), plus the checklist sections; claims match, and the not-verified lists are honest. Spot-checks by me: (a) grep finds no OnGUI or GUI. in Game/Match (T4 claim: OnGUI removed); (b) Build Settings read back in Unity lists Challenge and Match, enabled (T1 claim); (c) hud-lost.png shows "Tray full" with Retry and 7/7 in the tray. I did not enter Play Mode. Core tests: NOT re-run by me this time. dotnet was blocked by a Windows Application Control policy ("An Application Control policy has blocked this file", 0x800711C7 loading PulseArena.CoreTests.dll). It ran 109/109 earlier today. Core and Tests sources are unchanged since then (git diff shows only .meta files and UnityStubs.cs), so I accept on that basis and flag it to the user. I did not try to bypass the policy.
   Carry-over to T3 (from T1/T4, not verified yet): move timing (0.25 s), shake on blocked tap, popup timing, dim/bright tint comparison, last-slot triple in the scene, GC Alloc 0 B per frame in Playing (Profiler), Reduce Motion, touch (T7). T3 evidence must cover the first six.
   FramingMargin: yes, raise to 1.10 (margins of 2.4 to 2.6 percent are too tight for phone bezels). Re-capture 16:9 and 9:16 with the tray visible.
-
+- 2026-10-11 builder: T3 set to doing (juice standard, GAME_DESIGN). Carry-over evidence (from the architect's T1/T4 note): move timing, blocked-tap shake, popup timing, dim/bright tint, last-slot triple in the scene, GC Alloc per frame (ProfilerRecorder if no Profiler capture is possible). Also: Reduce Motion and the audio hooks (silent). FramingMargin 1.10 and the tray re-capture follow. CoreTests on this machine: 109/109 (dotnet ran here; the architect's machine is blocked by policy).
