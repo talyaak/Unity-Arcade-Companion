@@ -32,6 +32,13 @@ Unity version under test: _not yet opened_
 - [x] Scoring: +100 per hit at x1; -50 per miss, floored at 0; combo rises (best combo 5 in one run) and reads 0 after each miss
 - [ ] Multiplier step in Unity: x2 at combo 5 and +200 on the 6th hit. **Not verified in Unity.** Covered by Core tests (`MultiplierFor_StepsAtComboBoundaries`, `Hit_UsesMultiplierBeforeComboIncreases`). The asset-to-config mapping was checked by reading the code, not by a test. No run has yet reached combo 5 with a further hit.
 
+## Match scene framing and light (T2; Unity 6000.4.0f1, Play Mode, Editor; evidence in docs/evidence/T2/)
+- [x] Pulse Arena > Build Match Scene leaves exactly one directional light (soft shadows, rotation 50, -30, 0), read back with `FindObjectsByType<Light>()`
+- [x] Stage 5 (6x6, stack height 5, 7-slot tray row, popup headroom): all 8 corners of the content box project inside the viewport at 16:9 and 9:16 (`framing.txt`)
+- [x] Render pipeline is Built-in (`graphics-settings.txt`)
+- [ ] Popup and HUD framing. **Not verified.** Render-texture captures do not include IMGUI; waits for T4 (HUD) and T3 (world-space popup).
+- [ ] Framing on a real window resize (`Update` refit when Screen size changes). **Not verified**; only `FitCamera` with a forced aspect was run.
+
 ## Platform and performance (device-gated, not started)
 - [ ] Runs on a real Android or iOS device at target frame rate (no measurement exists yet)
 - [ ] Input latency measured and acceptable (no measurement exists yet)

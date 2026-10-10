@@ -25,7 +25,7 @@ and every handoff also gets a line here.
 | ID | Title | Owner | Status |
 |---|---|---|---|
 | T1 | Verify the match play loop in Unity | builder | blocked (Editor restart needed for the input backend) |
-| T2 | Visual baseline: pipeline check, framing, light | builder | doing |
+| T2 | Visual baseline: pipeline check, framing, light | builder | review |
 | T3 | Game feel pass v1 (per the juice standard) | builder | todo |
 | T4 | HUD decision (uGUI or UI Toolkit), then migrate the match HUD | architect decides, builder implements | doing (decided: UI Toolkit, D6; builder to migrate) |
 | T5 | Stage pacing from simulator bands, plus a playtest log | architect (bands), builder (playtest) | doing (bands + Core test done, D7; builder playtest log pending) |
@@ -76,4 +76,4 @@ frame time and input latency.
 - 2026-10-11 builder, T1 blocked: Input System 1.20.1 is installed and Active Input Handling is saved as Both, but the Editor must restart before the new backend is active. Restart (`quit` tool) was denied by the permission classifier, so Pointer taps and the IMGUI Retry / Next stage buttons are not verified. Through `MatchController.Tap()` I saw: Blocked and Moved outcomes, a triple clear, stage 1 Won, stage 5 Lost, 0 Console errors, flat material count (83). Evidence: `docs/evidence/T1/` (4 PNGs). Not seen: move timing, shake, popup, HUD text, buttons, last-slot triple, tint comparison. dotnet CoreTests: 109 passed (board expected 107). Render pipeline is Built-in (Standard shader), for T2.
 - 2026-10-11 builder handover: the previous builder session (unity-arcade-companion-b3) is paused, and a new builder session replaces it. Its full handoff is at `C:\Dev\Unity-Arcade-Companion-BUILDER-HANDOFF.md` (outside the repo). T2 is doing. Its uncommitted WIP (framing and one directional light, in MatchController.cs and PulseArenaSceneBuilder.cs) is unverified and fails the GameCompile stub build; a patch copy is at `C:\Dev\BUILDER-WIP-T2.patch`. The Editor still needs a restart before the Input System backend is active (the quit tool was denied). CoreTests: 109 of 109 pass.
 - 2026-10-11: User approved the asset spec as a later-stage plan. T6 done as a spec-only ticket. No generator work, assets or ledger rows until the user starts the asset stage. Silhouette gap (4 shapes, 7 symbols) recorded in ASSET_PIPELINE as a known gap. Tile scale to 0.9 units stays in T2 (builder).
-
+- 2026-10-11 builder, T2 review: Built-in pipeline recorded under D5 (builder reading only). One soft-shadow directional light. Camera refits to stage 5 at 16:9 and 9:16; all 8 content-box corners project inside the viewport. Evidence: `docs/evidence/T2/` (2 PNGs, framing.txt, graphics-settings.txt). Not verified: popup/HUD framing (IMGUI is not in render-texture captures; waits on T4/T3), live window resize. dotnet: 109/109, GameCompile 0 errors (stubs extended, gate unchanged). Next: T4.

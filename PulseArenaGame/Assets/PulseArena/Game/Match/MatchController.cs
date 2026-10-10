@@ -18,6 +18,10 @@ namespace PulseArena.Game
         private const float MaxFrameSeconds = 0.1f;
         private const float PopupSeconds = 0.9f;
         private const float DimmedBrightness = 0.45f;
+        private const float TileRadius = 0.5f;
+        private const float TileHalfHeight = 1f;      // cylinders and capsules are 2 units tall
+        private const float PopupHeadroom = 1f;       // room above the stacks for the world-space "+points" popup (D6)
+        private const float FramingMargin = 1.05f;
 
         // Original palette and shapes for this game. Symbols beyond these lists cycle through them.
         private static readonly Color[] Palette =
@@ -52,6 +56,10 @@ namespace PulseArena.Game
         private double _clock;
         private string _popup = string.Empty;
         private float _popupLeft;
+        private Camera _camera;
+        private int _maxStack;
+        private int _fitWidth;
+        private int _fitHeight;
 
         public MatchBoard Board => _board;
 
@@ -64,6 +72,7 @@ namespace PulseArena.Game
                 return;
             }
 
+            _camera = Camera.main;
             StartLevel(_stageIndex, (ulong)DateTime.UtcNow.Ticks);
         }
 
@@ -88,8 +97,10 @@ namespace PulseArena.Game
                 CreateView(tile);
             }
 
+            _maxStack = MaxStackHeight(level.Tiles);
             LayoutBoard();
             RefreshTints();
+            FitCamera();
         }
 
         /// Sends one tap to Core. Returns Core's answer, or null when there is no level.
@@ -161,6 +172,11 @@ namespace PulseArena.Game
                 _popupLeft -= Time.deltaTime;
             }
 
+            if (_board != null && (Screen.width != _fitWidth || Screen.height != _fitHeight))
+            {
+                FitCamera();
+            }
+
             HandlePointer();
         }
 
@@ -183,6 +199,75 @@ namespace PulseArena.Game
                     Tap(view.TileId);
                 }
             }
+        }
+
+        // Keeps the board, tray and popup room on screen at any aspect ratio. The content's bounding sphere must fit inside
+        // the narrower of the vertical and horizontal fields of view. Only the distance changes; the camera's pitch stays.
+        private void FitCamera()
+        {
+            if (_camera == null || _spec == null)
+            {
+                return;
+            }
+
+            _fitWidth = Screen.width;
+            _fitHeight = Screen.height;
+
+            float halfBoardX = (_spec.GridWidth - 1) * 0.5f * CellSpacing + TileRadius;
+            float halfBoardZ = (_spec.GridHeight - 1) * 0.5f * CellSpacing + TileRadius;
+            float halfTrayX = (_rules.TrayCapacity - 1) * 0.5f * TraySpacing + TileRadius;
+            float halfX = Mathf.Max(halfBoardX, halfTrayX);
+            float minZ = Mathf.Min(-halfBoardZ, TrayZ - TileRadius);
+            float maxZ = Mathf.Max(halfBoardZ, TrayZ + TileRadius);
+            float maxY = _maxStack * TileHeight + TileHalfHeight + PopupHeadroom;
+
+            var min = new Vector3(-halfX, -TileHalfHeight, minZ);
+            var max = new Vector3(halfX, maxY, maxZ);
+            Vector3 center = (min + max) * 0.5f;
+
+            // Place the camera on its own view axis so that all eight corners of the content box fit in the frustum.
+            // For a corner at (right, up, ahead) from the content centre, the camera distance d must satisfy
+            // |right| / (d + ahead) <= tan(halfH) and |up| / (d + ahead) <= tan(halfV).
+            float tanV = Mathf.Tan(_camera.fieldOfView * Mathf.Deg2Rad * 0.5f);
+            float tanH = tanV * _camera.aspect;
+            Vector3 right = _camera.transform.right;
+            Vector3 up = _camera.transform.up;
+            Vector3 forward = _camera.transform.forward;
+            float distance = 0f;
+            for (int i = 0; i < 8; i++)
+            {
+                var corner = new Vector3(
+                    (i & 1) == 0 ? min.x : max.x,
+                    (i & 2) == 0 ? min.y : max.y,
+                    (i & 4) == 0 ? min.z : max.z) - center;
+                float ahead = Dot(corner, forward);
+                float needH = Mathf.Abs(Dot(corner, right)) / tanH - ahead;
+                float needV = Mathf.Abs(Dot(corner, up)) / tanV - ahead;
+                distance = Mathf.Max(distance, Mathf.Max(needH, needV));
+            }
+
+            _camera.transform.position = center - forward * (distance * FramingMargin);
+        }
+
+        private static float Dot(Vector3 a, Vector3 b)
+        {
+            return a.x * b.x + a.y * b.y + a.z * b.z;
+        }
+
+        private static int MaxStackHeight(IEnumerable<MatchTile> tiles)
+        {
+            var perCell = new Dictionary<(int, int), int>();
+            int max = 0;
+            foreach (MatchTile tile in tiles)
+            {
+                var cell = (tile.X, tile.Y);
+                perCell.TryGetValue(cell, out int count);
+                count++;
+                perCell[cell] = count;
+                if (count > max) { max = count; }
+            }
+
+            return max;
         }
 
         private void OnGUI()

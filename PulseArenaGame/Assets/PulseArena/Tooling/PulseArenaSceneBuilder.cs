@@ -76,6 +76,36 @@ namespace PulseArena.Tooling
                 camera.transform.rotation = Quaternion.Euler(55f, 0f, 0f);
             }
 
+            // Exactly one directional light, with soft shadows. The new scene brings its own, so keep that one and
+            // remove any others.
+            Light sun = null;
+            foreach (Light light in Object.FindObjectsByType<Light>())
+            {
+                if (light.type != LightType.Directional)
+                {
+                    continue;
+                }
+
+                if (sun == null)
+                {
+                    sun = light;
+                }
+                else
+                {
+                    Object.DestroyImmediate(light.gameObject);
+                }
+            }
+
+            if (sun == null)
+            {
+                sun = new GameObject("Directional Light").AddComponent<Light>();
+                sun.type = LightType.Directional;
+            }
+
+            sun.transform.rotation = Quaternion.Euler(50f, -30f, 0f);
+            sun.intensity = 1f;
+            sun.shadows = LightShadows.Soft;
+
             EditorSceneManager.SaveScene(scene, MatchScenePath);
             AddToBuildSettings(MatchScenePath);
             AssetDatabase.SaveAssets();

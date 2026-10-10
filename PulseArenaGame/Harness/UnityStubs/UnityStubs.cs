@@ -153,6 +153,9 @@ namespace UnityEngine
     {
         public Vector3 position;
         public Vector3 localScale = new Vector3(1f, 1f, 1f);
+        public Vector3 forward = new Vector3(0f, 0f, 1f);
+        public Vector3 right = new Vector3(1f, 0f, 0f);
+        public Vector3 up = new Vector3(0f, 1f, 0f);
     }
 
     public struct Vector3
@@ -167,6 +170,23 @@ namespace UnityEngine
         public float x;
         public float y;
         public float z;
+
+        public float magnitude => (float)System.Math.Sqrt(x * x + y * y + z * z);
+
+        public static Vector3 operator +(Vector3 a, Vector3 b)
+        {
+            return new Vector3(a.x + b.x, a.y + b.y, a.z + b.z);
+        }
+
+        public static Vector3 operator -(Vector3 a, Vector3 b)
+        {
+            return new Vector3(a.x - b.x, a.y - b.y, a.z - b.z);
+        }
+
+        public static Vector3 operator *(Vector3 a, float d)
+        {
+            return new Vector3(a.x * d, a.y * d, a.z * d);
+        }
 
         public static Vector3 Lerp(Vector3 a, Vector3 b, float t)
         {
@@ -272,6 +292,8 @@ namespace UnityEngine
     public class Camera : Component
     {
         public static Camera main = new Camera();
+        public float fieldOfView = 60f;
+        public float aspect = 1f;
 
         public Ray ScreenPointToRay(Vector3 position)
         {
@@ -315,9 +337,31 @@ namespace UnityEngine
             return (float)System.Math.Sin(value);
         }
 
+        public const float Deg2Rad = 0.0174532924f;
+
         public static float Max(float a, float b)
         {
             return a > b ? a : b;
+        }
+
+        public static float Abs(float value)
+        {
+            return value < 0f ? -value : value;
+        }
+
+        public static float Min(float a, float b)
+        {
+            return a < b ? a : b;
+        }
+
+        public static float Tan(float value)
+        {
+            return (float)System.Math.Tan(value);
+        }
+
+        public static float Atan(float value)
+        {
+            return (float)System.Math.Atan(value);
         }
     }
 }

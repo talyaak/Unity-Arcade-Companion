@@ -33,6 +33,10 @@ The builder records Built-in or URP in T2, with the evidence (Graphics settings 
 Constraint for the choice: soft shadows on one directional light, and shared materials from D3. Do not migrate
 pipelines without a decision entry here.
 
+Builder reading (2026-10-11, T2): Built-in. `get_graphics_settings` returns no default render pipeline and
+`usingScriptableRenderPipeline: false`; `Tile.mat` uses the Standard shader. The Match scene has one soft-shadow
+directional light. Evidence: `docs/evidence/T2/graphics-settings.txt`.
+
 ## D6: HUD framework = UI Toolkit. Status: decided (2026-10-11), T4
 
 Reasons:
