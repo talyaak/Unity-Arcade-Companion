@@ -25,7 +25,7 @@ and every handoff also gets a line here.
 | ID | Title | Owner | Status |
 |---|---|---|---|
 | T1 | Verify the match play loop in Unity | builder | blocked (Editor restart needed for the input backend) |
-| T2 | Visual baseline: pipeline check, framing, light | builder | todo |
+| T2 | Visual baseline: pipeline check, framing, light | builder | doing |
 | T3 | Game feel pass v1 (per the juice standard) | builder | todo |
 | T4 | HUD decision (uGUI or UI Toolkit), then migrate the match HUD | architect decides, builder implements | doing (decided: UI Toolkit, D6; builder to migrate) |
 | T5 | Stage pacing from simulator bands, plus a playtest log | architect (bands), builder (playtest) | doing (bands + Core test done, D7; builder playtest log pending) |
@@ -74,3 +74,4 @@ frame time and input latency.
 
 - 2026-10-11: Architect review of builder commit 3a36505 (Input System, Match scene, Tile material): progress note, not a ticket handoff. T1 stays doing (no evidence path, Play Mode not run). Claims match the commit body. Core tests re-run by builder at 109. Spot-check deferred: needs the Editor, which the builder owns during T1. Next for builder: run T1 in Play Mode, put evidence under docs/evidence/T1/, then set T1 to review.
 - 2026-10-11 builder, T1 blocked: Input System 1.20.1 is installed and Active Input Handling is saved as Both, but the Editor must restart before the new backend is active. Restart (`quit` tool) was denied by the permission classifier, so Pointer taps and the IMGUI Retry / Next stage buttons are not verified. Through `MatchController.Tap()` I saw: Blocked and Moved outcomes, a triple clear, stage 1 Won, stage 5 Lost, 0 Console errors, flat material count (83). Evidence: `docs/evidence/T1/` (4 PNGs). Not seen: move timing, shake, popup, HUD text, buttons, last-slot triple, tint comparison. dotnet CoreTests: 109 passed (board expected 107). Render pipeline is Built-in (Standard shader), for T2.
+- 2026-10-11 builder handover: the previous builder session (unity-arcade-companion-b3) is paused, and a new builder session replaces it. Its full handoff is at `C:\Dev\Unity-Arcade-Companion-BUILDER-HANDOFF.md` (outside the repo). T2 is doing. Its uncommitted WIP (framing and one directional light, in MatchController.cs and PulseArenaSceneBuilder.cs) is unverified and fails the GameCompile stub build; a patch copy is at `C:\Dev\BUILDER-WIP-T2.patch`. The Editor still needs a restart before the Input System backend is active (the quit tool was denied). CoreTests: 109 of 109 pass.
