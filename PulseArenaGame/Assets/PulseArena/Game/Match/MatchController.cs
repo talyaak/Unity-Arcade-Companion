@@ -18,8 +18,9 @@ namespace PulseArena.Game
         private const float MaxFrameSeconds = 0.1f;
         private const float PopupSeconds = 0.9f;
         private const float DimmedBrightness = 0.45f;
-        private const float TileRadius = 0.5f;
-        private const float TileHalfHeight = 1f;      // cylinders and capsules are 2 units tall
+        private const float TileScale = 0.9f;         // tile footprint in units (ASSET_PIPELINE section 3)
+        private const float TileRadius = TileScale * 0.5f;
+        private const float TileHalfHeight = TileScale; // cylinders and capsules are 2 units tall at scale 1
         private const float PopupHeadroom = 1f;       // room above the stacks for the world-space "+points" popup (D6)
         private const float FramingMargin = 1.05f;
 
@@ -350,6 +351,7 @@ namespace PulseArena.Game
         {
             GameObject go = GameObject.CreatePrimitive(Shapes[tile.Symbol % Shapes.Length]);
             go.name = "Tile " + tile.Id;
+            go.transform.localScale = new Vector3(TileScale, TileScale, TileScale);
             TileView view = go.AddComponent<TileView>();
             view.Init(tile.Id, BoardPosition(tile.X, tile.Y, 0));
             view.SetMaterial(MaterialFor(tile.Symbol, dimmed: false));
