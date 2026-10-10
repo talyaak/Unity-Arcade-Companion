@@ -116,3 +116,4 @@ Evidence: `docs/evidence/T3/gc-standalone.txt` (standalone development build, 8,
 - The Editor reading (9,013 B per frame baseline) is not a game cost and is not used.
 - Android device numbers (T7) are still needed; desktop numbers are not phone numbers.
 
+D12 clarification (2026-10-11, builder question): the 16 KB tap-frame limit covers board taps (move, clear, win, loss). Level-start frames (Retry and Next stage presses, which build the board) are a separate category with a limit of 50 KB. The measured 9 to 37 KB (median 31 KB) passes. Reason: they happen once per stage behind a result panel, not during play, and 54 tile objects per level is the design. No tile pooling now. Revisit if the Android run (T7) shows a visible hitch at level start; then pool the tile objects and re-measure.
