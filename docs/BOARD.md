@@ -24,7 +24,7 @@ and every handoff also gets a line here.
 
 | ID | Title | Owner | Status |
 |---|---|---|---|
-| T1 | Verify the match play loop in Unity | builder | todo |
+| T1 | Verify the match play loop in Unity | builder | doing |
 | T2 | Visual baseline: pipeline check, framing, light | builder | todo |
 | T3 | Game feel pass v1 (per the juice standard) | builder | todo |
 | T4 | HUD decision (uGUI or UI Toolkit), then migrate the match HUD | architect decides, builder implements | todo |
@@ -69,3 +69,4 @@ frame time and input latency.
 ## Log
 
 - 2026-10-10: Board created. Match MVP committed at `9373396`. The Input System package and the Unity runs are not done yet.
+- 2026-10-11: Builder started T1 (status doing).
