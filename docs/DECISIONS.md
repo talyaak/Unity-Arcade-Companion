@@ -127,3 +127,5 @@ Trigger: T9 human playtest (one player, the user) said the feel is good and aske
 - **Known gap closed when T10 lands:** the silhouette gap (4 primitive shapes for 7 symbols) is closed if the seven emblems are distinct shapes, readable at 576 x 1024. Colour must never be the only cue.
 - **Originality:** the reference notes (`docs/research/T10-reference.md`) are for layout and feel only. Emblems, names, colours and UI must be original and not copied or traced from any reference image or game. No timers, coins, currency, shop, lives, lock icons or boosters (D4).
 - **Unchanged:** stage sizes and D7 bands, D12 GC limits, Reduce Motion behaviour, UI Toolkit (D6). T2 framing evidence is superseded by the T10 captures.
+
+D12 clarification 2 (2026-10-11, T10 step d): the result-card slide after a win or loss allocates up to 2 KB a frame for about 18 frames (UI Toolkit style updates, 0.3 s). Accepted as event work: frames within 0.5 s after a win or loss may allocate up to 4 KB. Measured: 56 such frames, 44,592 B in total, none over 2 KB. Steady frames outside those windows stay at 0 B. Revisit if the Android run (T7) shows a hitch during the slide.
