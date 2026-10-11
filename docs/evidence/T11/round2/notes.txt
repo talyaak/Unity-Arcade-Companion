@@ -54,3 +54,9 @@ WHAT WAS NOT VERIFIED
 
 ROUND 1
 - docs/evidence/T11/ (notes.txt, runs/, shots/, probe/) is round 1, the accepted prototype. Its seed 20261012 layout is stale after D15.
+
+RE-MEASURE AFTER THE CORE CHANGE (ReportFreeTiles reuses one set, D16; build_82d3c4c451dc; same settings as the final set; files in remeasure/)
+- Stage 2 settle, besides the level start: portrait 11,536 B over 19 frames before, 2,112 B over 21 frames now (p90 392 B before, 40 B now). Landscape 10,144 B over 17 frames before, 1,968 B over 19 frames now (p90 392 B before, 40 B now). Level start 18,566 B and 18,526 B (18,918 B and 19,094 B before).
+- The Core change explains about 8 to 9 KB of the 10 to 12 KB settle allocation. About 2 KB over about 20 frames remains (p90 40 B); not traced.
+- Outcomes unchanged: portrait Lost (600, 16 taps), landscape Won (2,200, 21 taps). 0 exceptions; material count 44.
+- CoreTests were not rerun here: the test DLL in Harness/bin was blocked by a Windows Application Control policy (0x800711C7) when it loaded. The architect's run (116 of 116) stands.
