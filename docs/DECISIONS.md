@@ -171,7 +171,7 @@ Bands are the new measured value plus or minus 8 points, as in D7. The Core band
 - **Outcomes:** 1 win and 6 losses on stage 2 in 7 runs is not a sample and no win rate is claimed. The same policy gave a different result at two aspect ratios, probably because the probe taps every 4 frames; not tested. Physics mode is not repeatable across frame rates, which is part of why it has no replay check.
 
 
-## D17: Screens, win display and settings scope. Status: PROPOSED, awaiting the user's approval (2026-10-11)
+## D17: Screens, win display and settings scope. Status: decided, approved by the user (2026-10-11)
 
 Source: the builder's scope page (https://claude.ai/artifact/GfBvddZgsSeXaJoYumpCyL): title, stage select, pause, stage win, campaign complete, settings, how to play, about; saved progress; Build Settings gets the title and stage-select scenes. Architect check against the rules: no money, coins, shop, lives, timers, stars, boosters or lock icons (D4, D13); original art (D8 as amended); UI Toolkit (D6); 53 triples across five stages is right (4+7+10+14+18); mock scores are labelled examples; confetti stays within D9; physics stays out of the player menu (D14, D16). No hard-rule problem found.
 Rulings and conditions, which apply once the user approves:
@@ -182,3 +182,14 @@ Rulings and conditions, which apply once the user approves:
 5. **Build Settings:** adding scenes needs the user's explicit approval, as the page says.
 6. **Frame budgets:** scene loads count as level starts (50 KB). The 4 KB result-window rule (D12 clarification 2) applies to the new win display and must be measured in phase 2, as the page plans.
 7. Stage sizes and D7/D15 bands do not change. Correction (builder's check): the earlier wording "reached rarely" was wrong. The greedy bot's stage rates (100, 97, 94, 85, 76 percent) multiply to about 59 percent for five wins in a row in one run, and a player can retry any stage, so a careful player reaches the campaign-complete screen after winning stage 5 once. A random tapper almost never does (0 percent on stages 4 and 5). Do not tune stage 5 for this without a playtest.
+
+## D18: Stage 0, a WebGL build the user can open on a phone through a Cloudflare quick tunnel. Status: decided (2026-10-11)
+
+The user asked for an option to build the game and send a Cloudflare tunnel link to their ntfy client, modelled on the job-hunter project.
+
+1. **Target is WebGL.** The WebGL module is installed for 6000.4.0f1. A phone opens the link in its browser; no device, no Android install (T7 stays blocked). It is a prototype delivery, not a release.
+2. **Shared helpers, not copies.** `PulseArenaGame/tools/ship-webgl.mjs` serves `Builds/WebGL` on 127.0.0.1, starts a quick tunnel with `C:\Dev\scripts\cloudflared-quick.mjs`, and sends the link with `C:\Dev\scripts\notify-dev-url.mjs` to the topic in `C:\Dev\.env.dev-notify` (the topic is a secret and is never written into this repo). `--no-tunnel` and `--no-notify` exist for tests.
+3. **Unity side (builder, Tooling).** One Editor method `PulseArenaBuild.BuildWebGL` behind the menu `Pulse Arena > Build WebGL`, also callable with `-executeMethod` when the Editor is closed. It builds the scenes already in Build Settings to `PulseArenaGame/Builds/WebGL` (ignored by git). Compression Disabled (the serve script also handles .br and .gz). Template must fill the browser window, portrait first, touch input working.
+4. **Cost and privacy.** Quick tunnels and ntfy.sh are free and need no account, so no money question. The tunnel URL is public to anyone who has it and lasts only while the script runs; the build holds no secrets. The ntfy message goes to ntfy.sh and may be cached there, which the user accepted by naming it.
+5. **Limits.** A WebGL run is not the Android run: frame time, touch feel and GC on a phone browser are not T7 evidence. Physics mode is not in Build Settings, so it is not in the build.
+6. **Evidence the architect needs for T13.** Build succeeds with 0 errors; `index.html` loads through the tunnel (HTTP 200 for the loader, data and wasm); a headless or Editor capture of the first screen; the console has no exception; the user confirms the ntfy message arrived and the game opens on their phone.
