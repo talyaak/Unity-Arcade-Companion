@@ -4,38 +4,51 @@ using UnityEngine.UIElements;
 
 namespace PulseArena.Game
 {
-    /// Match HUD in UI Toolkit: stage, score, combo, tray count, the result (Level cleared or Tray full) with its buttons,
-    /// and the Reduce Motion toggle. Points are world-space popups (D6), so the message shows results only. It keeps no game
-    /// state, and a label is written only when its value changes.
+    /// Match HUD in UI Toolkit (D6). It shows Core's state only: the stage, the score, the combo, a bar for the tiles cleared,
+    /// the tray as seven slots, and the result (Level cleared or Tray full) with its buttons. Points are world-space popups
+    /// (D6), so the result card shows results only. The look is in MatchHud.uss (T10). It keeps no game state, and it writes a
+    /// value only when that value changes.
     public sealed class MatchHud : MonoBehaviour
     {
-        private const float Padding = 16f;
-        private const float SlideSeconds = 0.3f;     // the result panel slides in over 0.3 s (juice standard)
+        private const float SlideSeconds = 0.3f;     // the result card slides in over 0.3 s (juice standard)
         private const float SlideDistance = 160f;
         private const int WarmUpFrames = 2;
+        private const int ComboForFullBar = 5;       // the combo bar fills at this combo and stays full above it
+
         // Every character the HUD draws. Drawn once before the first tap (see Start), so no tap pays for a new glyph.
-        private const string WarmUpText = "Stage Score Combo Tray Left Level cleared Tray full Retry Next stage Reduce motion: on off 0123456789 /";
-        private static readonly Color Ink = new Color(0.96f, 0.96f, 0.98f, 1f);
-        private static readonly Color ButtonFill = new Color(0.25f, 0.75f, 0.72f, 1f);
-        private static readonly Color ButtonInk = new Color(0.07f, 0.08f, 0.1f, 1f);
+        private const string WarmUpText = "Stage Score Combo Tray Cleared Level cleared Tray full Retry Next stage "
+            + "Reduce motion: on off 0123456789 / abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
         [SerializeField] private MatchController _match;
+        [SerializeField] private StyleSheet _style;
 
-        private Label _status;
+        private VisualElement _root;
+        private VisualElement[] _pips = new VisualElement[0];
+        private Label _stage;
+        private Label _score;
+        private Label _combo;
+        private VisualElement _comboFill;
+        private Label _cleared;
+        private VisualElement _clearedFill;
+        private Label _tray;
         private VisualElement _result;
-        private Label _message;
+        private Label _banner;
+        private Label _detail;
         private Button _retry;
         private Button _next;
         private Button _motion;
 
+        private MatchBoard _shownBoard;
+        private int _totalTiles;
         private int _shownStage = -1;
         private int _shownScore = -1;
         private int _shownCombo = -1;
         private int _shownTray = -1;
-        private int _shownLeft = -1;
+        private int _shownCleared = -1;
         private MatchState _shownState = MatchState.Playing;
         private float _slideT = 1f;
         private bool _shownReduce;
+        private bool _shownLandscape;
         private int _warmFrames;
 
         // Verification fields (game time). The verification reads them; the game does not.
@@ -46,48 +59,108 @@ namespace PulseArena.Game
         private void Start()
         {
             VisualElement root = GetComponent<UIDocument>().rootVisualElement;
+            _root = root;
             root.pickingMode = PickingMode.Ignore;   // taps on the board pass through the HUD to the tiles
-            root.style.flexDirection = FlexDirection.Column;
-            root.style.paddingLeft = Padding;
-            root.style.paddingRight = Padding;
-            root.style.paddingTop = Padding;
-            root.style.paddingBottom = Padding;
+            if (_style != null)
+            {
+                root.styleSheets.Add(_style);
+            }
 
-            // Top row: the status on the left, Reduce Motion in the top-right corner, clear of the board and the popups.
-            var topRow = new VisualElement();
-            topRow.style.flexDirection = FlexDirection.Row;
-            topRow.style.alignItems = Align.Center;
-            _status = AddLabel(topRow, 28f);
-            _status.style.flexGrow = 1f;
-            _motion = AddButton(topRow, "Reduce motion: off", visible: true);
+            root.AddToClassList("hud-root");
+
+            // Top bar: the stage badge, the score, and Reduce Motion at the right, clear of the board and the popups.
+            VisualElement topBar = MakeBox("hud-bar");
+            VisualElement badge = MakeBox("hud-badge");
+            badge.Add(MakeLabel("Stage", "hud-badge-label"));
+            _stage = MakeLabel(string.Empty, "hud-badge-value");
+            badge.Add(_stage);
+            topBar.Add(badge);
+
+            VisualElement score = MakeBox("hud-score");
+            score.Add(MakeLabel("Score", "hud-kicker"));
+            _score = MakeLabel(string.Empty, "hud-value");
+            score.Add(_score);
+            topBar.Add(score);
+
+            _motion = MakeButton("Reduce motion: off", "hud-pill");
             _motion.clicked += OnToggleMotion;
-            root.Add(topRow);
-            root.Add(Spacer(1f));
+            topBar.Add(_motion);
+            root.Add(topBar);
 
-            _result = new VisualElement();
-            _result.pickingMode = PickingMode.Ignore;
+            // Progress: the tiles cleared out of the level's total, and the combo (full at ComboForFullBar).
+            VisualElement panel = MakeBox("hud-panel");
+            VisualElement clearedRow = MakeBox("hud-row");
+            clearedRow.Add(MakeLabel("Cleared", "hud-kicker"));
+            _cleared = MakeLabel(string.Empty, "hud-kicker-value");
+            clearedRow.Add(_cleared);
+            panel.Add(clearedRow);
+            VisualElement clearedTrack = MakeBox("hud-track");
+            _clearedFill = MakeBox("hud-fill");
+            clearedTrack.Add(_clearedFill);
+            panel.Add(clearedTrack);
+
+            VisualElement comboRow = MakeBox("hud-row", "hud-row-gap");
+            comboRow.Add(MakeLabel("Combo", "hud-kicker"));
+            _combo = MakeLabel(string.Empty, "hud-kicker-value");
+            comboRow.Add(_combo);
+            panel.Add(comboRow);
+            VisualElement comboTrack = MakeBox("hud-track", "hud-track-small");
+            _comboFill = MakeBox("hud-fill", "hud-fill-combo");
+            comboTrack.Add(_comboFill);
+            panel.Add(comboTrack);
+            root.Add(panel);
+
+            root.Add(MakeSpacer(1f));
+
+            // The result card: the banner, the score, and the buttons. It slides in when the level ends.
+            _result = MakeBox("hud-card");
+            _result.pickingMode = PickingMode.Ignore;   // the buttons inside still take taps
             _result.style.opacity = 0f;
-            _message = AddLabel(_result, 48f);
-            _message.style.unityTextAlign = TextAnchor.MiddleCenter;
-            _message.style.marginBottom = Padding;
-
-            var buttons = new VisualElement();
-            buttons.style.flexDirection = FlexDirection.Row;
-            buttons.style.justifyContent = Justify.Center;
-            _retry = AddButton(buttons, "Retry", visible: false);
-            _next = AddButton(buttons, "Next stage", visible: false);
+            _banner = MakeLabel(string.Empty, "hud-banner");
+            _result.Add(_banner);
+            _detail = MakeLabel(string.Empty, "hud-detail");
+            _result.Add(_detail);
+            VisualElement buttons = MakeBox("hud-buttons");
+            _retry = MakeButton("Retry", "hud-button", "hud-button-secondary");
+            _next = MakeButton("Next stage", "hud-button", "hud-button-primary");
             _retry.clicked += OnRetry;
             _next.clicked += OnNextStage;
+            buttons.Add(_retry);
+            buttons.Add(_next);
             _result.Add(buttons);
             root.Add(_result);
 
-            root.Add(Spacer(2f));
+            root.Add(MakeSpacer(1.3f));
+
+            // The tray: the count, and one slot per tile the tray holds. A slot lights as a tile arrives, and turns warm near full.
+            VisualElement tray = MakeBox("hud-tray");
+            VisualElement trayRow = MakeBox("hud-row");
+            trayRow.Add(MakeLabel("Tray", "hud-kicker"));
+            _tray = MakeLabel(string.Empty, "hud-kicker-value");
+            trayRow.Add(_tray);
+            tray.Add(trayRow);
+            VisualElement pipRow = MakeBox("hud-pips");
+            int capacity = _match != null ? _match.TrayCapacity : 0;
+            _pips = new VisualElement[capacity];
+            for (int i = 0; i < capacity; i++)
+            {
+                _pips[i] = MakeBox("hud-pip");
+                pipRow.Add(_pips[i]);
+            }
+
+            tray.Add(pipRow);
+            root.Add(tray);
 
             // Pre-warm. UI Toolkit builds the glyphs for a text the first time that text is laid out, and that build is the
             // expensive frame (the standalone spikes, T3 notes). So every label and button draws WarmUpText for two frames,
             // before the first tap. Update puts the real text back when the warm-up ends.
-            _status.text = WarmUpText;
-            _message.text = WarmUpText;
+            _stage.text = WarmUpText;
+            _score.text = WarmUpText;
+            _cleared.text = WarmUpText;
+            _combo.text = WarmUpText;
+            _tray.text = WarmUpText;
+            _banner.text = WarmUpText;
+            _detail.text = WarmUpText;
             _motion.text = WarmUpText;
             _retry.text = WarmUpText;
             _next.text = WarmUpText;
@@ -98,7 +171,7 @@ namespace PulseArena.Game
 
         private void Update()
         {
-            if (_match == null || _match.Board == null || _status == null)
+            if (_match == null || _match.Board == null || _stage == null)
             {
                 return;
             }
@@ -108,31 +181,66 @@ namespace PulseArena.Game
                 _warmFrames--;
                 if (_warmFrames == 0)
                 {
-                    _message.text = string.Empty;
-                    _retry.text = "Retry";
-                    _next.text = "Next stage";
-                    _motion.text = _match.ReduceMotion ? "Reduce motion: on" : "Reduce motion: off";
-                    _retry.style.display = DisplayStyle.None;
-                    _next.style.display = DisplayStyle.None;
+                    RestoreAfterWarmUp();
                 }
 
                 return;
             }
 
+            // A compact look in landscape, so the top and bottom blocks stay inside the bands the camera leaves for them.
+            bool landscape = Screen.width > Screen.height;
+            if (landscape != _shownLandscape)
+            {
+                _shownLandscape = landscape;
+                _root.EnableInClassList("hud-landscape", landscape);
+            }
+
             MatchBoard board = _match.Board;
-            int tray = board.Tray.Count;
-            int left = board.RemainingOnBoard;
+            if (board != _shownBoard)
+            {
+                _shownBoard = board;
+                _totalTiles = board.TotalTiles;
+            }
+
             int stage = _match.StageNumber;
-            if (stage != _shownStage || board.Score != _shownScore || board.Combo != _shownCombo
-                || tray != _shownTray || left != _shownLeft)
+            int score = board.Score;
+            int combo = board.Combo;
+            int tray = board.Tray.Count;
+            int cleared = _totalTiles - board.RemainingOnBoard;
+
+            if (stage != _shownStage)
             {
                 _shownStage = stage;
-                _shownScore = board.Score;
-                _shownCombo = board.Combo;
+                _stage.text = stage.ToString();
+            }
+
+            if (score != _shownScore)
+            {
+                _shownScore = score;
+                _score.text = score.ToString();
+            }
+
+            if (combo != _shownCombo)
+            {
+                _shownCombo = combo;
+                _combo.text = combo.ToString();
+                float comboFill = combo >= ComboForFullBar ? 100f : 100f * combo / ComboForFullBar;
+                _comboFill.style.width = Length.Percent(comboFill);
+            }
+
+            if (cleared != _shownCleared)
+            {
+                _shownCleared = cleared;
+                _cleared.text = cleared + " / " + _totalTiles;
+                float clearedFill = _totalTiles > 0 ? 100f * cleared / _totalTiles : 0f;
+                _clearedFill.style.width = Length.Percent(clearedFill);
+            }
+
+            if (tray != _shownTray)
+            {
                 _shownTray = tray;
-                _shownLeft = left;
-                _status.text = $"Stage {stage}   Score {board.Score}   Combo {board.Combo}   " +
-                    $"Tray {tray}/{_match.TrayCapacity}   Left {left}";
+                _tray.text = tray + " / " + _match.TrayCapacity;
+                RefreshPips(tray);
             }
 
             MatchState state = board.State;
@@ -141,16 +249,19 @@ namespace PulseArena.Game
                 _shownState = state;
                 _retry.style.display = state == MatchState.Lost ? DisplayStyle.Flex : DisplayStyle.None;
                 _next.style.display = state == MatchState.Won ? DisplayStyle.Flex : DisplayStyle.None;
-                _message.text = state == MatchState.Won ? "Level cleared"
+                _banner.text = state == MatchState.Won ? "Level cleared"
                     : state == MatchState.Lost ? "Tray full"
                     : string.Empty;
+                _banner.EnableInClassList("hud-banner-won", state == MatchState.Won);
+                _banner.EnableInClassList("hud-banner-lost", state == MatchState.Lost);
+                _detail.text = state == MatchState.Playing ? string.Empty : "Score " + score;
                 _slideT = state == MatchState.Playing ? 1f : 0f;
                 if (state != MatchState.Playing)
                 {
                     SlideStartedAt = Time.time;
                     SlideEndedAt = -1f;
                 }
-                if (state == MatchState.Playing)
+                else
                 {
                     _result.style.opacity = 0f;
                 }
@@ -176,6 +287,31 @@ namespace PulseArena.Game
             }
         }
 
+        // The tray's slots: a slot is lit when a tile is in it, and turns warm when the tray is one short of full or full.
+        private void RefreshPips(int tray)
+        {
+            int warmFrom = _pips.Length - 1;
+            for (int i = 0; i < _pips.Length; i++)
+            {
+                bool lit = i < tray;
+                _pips[i].EnableInClassList("hud-pip-on", lit);
+                _pips[i].EnableInClassList("hud-pip-warn", lit && tray >= warmFrom);
+            }
+        }
+
+        // The warm-up text is replaced by the real text on the next Update, because the shown values are still unset.
+        private void RestoreAfterWarmUp()
+        {
+            _retry.text = "Retry";
+            _next.text = "Next stage";
+            _banner.text = string.Empty;
+            _detail.text = string.Empty;
+            _shownReduce = _match.ReduceMotion;
+            _motion.text = _shownReduce ? "Reduce motion: on" : "Reduce motion: off";
+            _retry.style.display = DisplayStyle.None;
+            _next.style.display = DisplayStyle.None;
+        }
+
         private void OnRetry()
         {
             _match.Retry();
@@ -191,35 +327,43 @@ namespace PulseArena.Game
             _match.ToggleReduceMotion();
         }
 
-        private static Label AddLabel(VisualElement parent, float size)
+        private static VisualElement MakeBox(params string[] classes)
+        {
+            var box = new VisualElement();
+            box.pickingMode = PickingMode.Ignore;
+            foreach (string name in classes)
+            {
+                box.AddToClassList(name);
+            }
+
+            return box;
+        }
+
+        private static Label MakeLabel(string text, params string[] classes)
         {
             var label = new Label();
-            label.style.fontSize = size;
-            label.style.color = Ink;
+            label.text = text;
             label.pickingMode = PickingMode.Ignore;
-            parent.Add(label);
+            foreach (string name in classes)
+            {
+                label.AddToClassList(name);
+            }
+
             return label;
         }
 
-        private static Button AddButton(VisualElement parent, string text, bool visible)
+        private static Button MakeButton(string text, params string[] classes)
         {
             var button = new Button { text = text };
-            button.style.fontSize = 32f;
-            button.style.color = ButtonInk;
-            button.style.backgroundColor = ButtonFill;
-            button.style.paddingLeft = 28f;
-            button.style.paddingRight = 28f;
-            button.style.paddingTop = 16f;
-            button.style.paddingBottom = 16f;
-            button.style.marginLeft = 8f;
-            button.style.marginRight = 8f;
-            button.style.marginTop = 8f;
-            button.style.display = visible ? DisplayStyle.Flex : DisplayStyle.None;
-            parent.Add(button);
+            foreach (string name in classes)
+            {
+                button.AddToClassList(name);
+            }
+
             return button;
         }
 
-        private static VisualElement Spacer(float grow)
+        private static VisualElement MakeSpacer(float grow)
         {
             var spacer = new VisualElement();
             spacer.style.flexGrow = grow;

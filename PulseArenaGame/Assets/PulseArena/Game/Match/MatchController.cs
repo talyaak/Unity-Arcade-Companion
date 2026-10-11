@@ -26,6 +26,8 @@ namespace PulseArena.Game
         private const float WellThickness = 0.2f;
         private const float HeadroomFraction = 0.2f;  // room above the tallest stack, as a fraction of that stack's height (T10 framing)
         private const float FramingMargin = 1.10f;    // margin around the content, set by the architect (2026-10-11)
+        private const float HudTopReserve = 0.2f;     // the top HUD block takes this fraction of the screen height (T10)
+        private const float HudBottomReserve = 0.1f;  // the bottom HUD block takes this fraction; the board is framed between the two
 
         // Juice standard timings (GAME_DESIGN, Motion). Presentation only: none of these change Core's clock.
         private const float HitStopSeconds = 0.06f;   // 60 ms of presentation delay on a clear
@@ -424,6 +426,7 @@ namespace PulseArena.Game
             Vector3 center = (min + max) * 0.5f;
             float tanV = Mathf.Tan(_camera.fieldOfView * Mathf.Deg2Rad * 0.5f);
             float tanH = tanV * _camera.aspect;
+            float tanVFree = tanV * (1f - HudTopReserve - HudBottomReserve);   // the vertical half field left for the board
             Vector3 right = _camera.transform.right;
             Vector3 up = _camera.transform.up;
             Vector3 forward = _camera.transform.forward;
@@ -437,10 +440,14 @@ namespace PulseArena.Game
                 Vector3 rel = p - center;
                 float ahead = Dot(rel, forward);
                 distance = Mathf.Max(distance, Mathf.Abs(Dot(rel, right)) / tanH - ahead);
-                distance = Mathf.Max(distance, Mathf.Abs(Dot(rel, up)) / tanV - ahead);
+                distance = Mathf.Max(distance, Mathf.Abs(Dot(rel, up)) / tanVFree - ahead);
             }
 
-            _cameraBase = center - forward * (distance * FramingMargin);
+            // The board's centre sits in the middle of the band between the HUD blocks. Moving the camera along its own up
+            // axis shifts the picture on screen without changing the view direction (so the 2.5D angle stays).
+            float d = distance * FramingMargin;
+            float screenCentreY = HudBottomReserve - HudTopReserve;   // -1 at the bottom of the screen, 1 at the top
+            _cameraBase = center - forward * d + up * (-screenCentreY * d * tanV);
             _cameraForward = forward;
             _camera.transform.position = _cameraBase;
         }

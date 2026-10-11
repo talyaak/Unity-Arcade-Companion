@@ -20,6 +20,7 @@ namespace PulseArena.Tooling
         private const string TileMaterialPath = MaterialFolder + "/Tile.mat";
         private const string UiFolder = "Assets/PulseArena/UI";
         private const string PanelSettingsPath = UiFolder + "/MatchPanelSettings.asset";
+        private const string HudStylePath = UiFolder + "/MatchHud.uss";
 
         [MenuItem("Pulse Arena/Build Challenge Scene")]
         public static void Build()
@@ -78,6 +79,7 @@ namespace PulseArena.Tooling
             MatchHud hud = hudObject.AddComponent<MatchHud>();
             var hudSerialized = new SerializedObject(hud);
             hudSerialized.FindProperty("_match").objectReferenceValue = controller;
+            hudSerialized.FindProperty("_style").objectReferenceValue = AssetDatabase.LoadAssetAtPath<StyleSheet>(HudStylePath);
             hudSerialized.ApplyModifiedPropertiesWithoutUndo();
 
             // A 2.5D view (T10, D13): a steeper look-down than the T2 baseline (55 degrees) and a narrower field of view, so the

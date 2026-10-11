@@ -156,4 +156,17 @@ Captures for every step are at 576 x 1024 (9:16) and 1920 x 1080 (16:9), in `doc
 - [x] Build: Unity recompile 0 errors; GameCompile 0 errors (stubs extended, gate unchanged); Development standalone build 0 errors; player log 0 exception lines
 - [ ] Material count flat across taps (D3 as amended by D13): not re-checked yet (step d)
 - [ ] GC: not re-measured in this step (step d; D12 limits unchanged)
-- [ ] HUD: not changed in this step (step c)
+- [x] HUD: changed in step c (see the step c section below)
+
+### Step c: HUD bars and buttons (`docs/evidence/T10/c-hud/`, `notes.txt`)
+- [x] Top bar: stage badge, score, and the Reduce motion button at the top right. Seen in both captures
+- [x] Progress bars: "Cleared n / total" with a bar, and a combo bar (full at 5). Seen (cleared 3 / 54; combo 0)
+- [x] Tray panel: "Tray n / 7" and seven slots; the lit slots match the tray. Seen (3 lit)
+- [x] Framing: the board sits between the HUD blocks (reserves 0.2 top, 0.1 bottom). No overlap in portrait or landscape. The first landscape draft overlapped and is fixed
+- [x] Buttons: a darker lower border, which shrinks when pressed (USS :active). The code and the USS are in place; the pressed look is not in a capture
+- [x] No timers, stars, lives, coins, shop or boosters
+- [x] Build: Unity recompile 0 errors; GameCompile 0 errors; Development standalone build 0 errors; player log 0 exception lines
+- [ ] Result card (Level cleared or Tray full, with Next stage and Retry) in a capture: step d (Editor check)
+- [ ] GC with the new meshes and HUD (D12 limits): step d
+- [ ] Material count flat across taps (D3 as amended by D13): step d
+- [ ] Covered tile against free tile, clearly different (architect's watch item): step d

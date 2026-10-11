@@ -493,6 +493,7 @@ namespace UnityEngine.UIElements
         public float marginBottom;
         public float marginTop;
         public float opacity;
+        public StyleLength width;
         public float fontSize;
         public Color color;
         public Color backgroundColor;
@@ -503,6 +504,15 @@ namespace UnityEngine.UIElements
     {
         public readonly IStyle style = new IStyle();
         public PickingMode pickingMode = PickingMode.Position;
+        public readonly System.Collections.Generic.List<StyleSheet> styleSheets = new System.Collections.Generic.List<StyleSheet>();
+
+        public void AddToClassList(string name)
+        {
+        }
+
+        public void EnableInClassList(string name, bool enable)
+        {
+        }
 
         public void Add(VisualElement child)
         {
@@ -518,6 +528,28 @@ namespace UnityEngine.UIElements
     {
         public string text;
         public event System.Action clicked;
+    }
+
+    public struct Length
+    {
+        public float value;
+
+        public static Length Percent(float value)
+        {
+            return new Length { value = value };
+        }
+    }
+
+    public struct StyleLength
+    {
+        public static implicit operator StyleLength(Length length)
+        {
+            return default(StyleLength);
+        }
+    }
+
+    public class StyleSheet : Object
+    {
     }
 
     public class UIDocument : MonoBehaviour
