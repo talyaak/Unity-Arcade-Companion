@@ -34,7 +34,7 @@ and every handoff also gets a line here.
 | T8 | Companion package | nobody | out of scope |
 | T11 | Physics mode prototype (D14), a new mode beside the grid game | builder | review (round 2: scatter spawn, pile captured, free set and GC re-checked; the architect decides done) |
 | T12 | Screens, win display and settings (D17): title, stage select, pause, win, campaign complete, settings | builder (Game), architect (Core MatchProgress) | approved by the user; phase 1 after Stage 0 (T13) and the Core MatchProgress rules |
-| T13 | Stage 0: build the game for WebGL and send a Cloudflare tunnel link to the user's ntfy client (D18) | builder (Unity build method), architect (serve and ship script, done) | review (built with Match then Challenge; checked headless locally and through the tunnel; ntfy sent; the user confirms the phone run; the link lives only while the script runs) |
+| T13 | Stage 0: build the game for WebGL and send a Cloudflare tunnel link to the user's ntfy client (D18) | builder (Unity build method), architect (serve and ship script, done) | done (builder side accepted, 32b5fe4); the user confirms the phone run; the link lives only while the script runs |
 | T9 | Human playtest of stages 1 to 5 (needs a person) | user, builder prepares | done (human playtest of stages 1 to 4 by one player; stage 5 unplayed, a recorded gap) |
 | T10 | Polish after T9: 2.5D camera, portrait default, tile look, UI bars and buttons (from the user's T9 feedback) | builder (confirmed by the architect, D13) | done (steps a to d accepted; carry-over: pressed button look not captured, Android run T7) |
 
