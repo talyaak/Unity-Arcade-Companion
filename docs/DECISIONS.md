@@ -129,3 +129,18 @@ Trigger: T9 human playtest (one player, the user) said the feel is good and aske
 - **Unchanged:** stage sizes and D7 bands, D12 GC limits, Reduce Motion behaviour, UI Toolkit (D6). T2 framing evidence is superseded by the T10 captures.
 
 D12 clarification 2 (2026-10-11, T10 step d): the result-card slide after a win or loss allocates up to 2 KB a frame for about 18 frames (UI Toolkit style updates, 0.3 s). Accepted as event work: frames within 0.5 s after a win or loss may allocate up to 4 KB. Measured: 56 such frames, 44,592 B in total, none over 2 KB. Steady frames outside those windows stay at 0 B. Revisit if the Android run (T7) shows a hitch during the slide.
+
+## D14: Physics tiles are a new mode beside the grid game. Status: decided (2026-10-11, user chose "new mode")
+
+Request (user, via the builder): pressable tiles that move freely under gravity, as rigid bodies that slide, tilt and pile up. The user chose option (b): a new mode next to the grid game, not a replacement.
+- **Grid game unchanged:** its rules, generator, replay check, D7 bands, bots and tests stay as they are. It remains the stable MVP.
+- **Core stays the rule authority** (hard rule: Game shows what Core decides). Physics mode adds one Core hook, done and tested (114 of 114 pass): `MatchBoard.ReportFreeTiles(ids)` and `MatchTile.Loose(id, symbol)`. Game reports which tiles have nothing resting on them. Core decides every tap (Blocked if not in the latest report), the tray, triples, combo, score, win and lose. Before the first report, the grid rule decides, so the existing mode is untouched.
+- **What physics mode gives up, on purpose:** no winnable-by-construction guarantee, no replay verification (the free set is not in the tap log and physics is not deterministic), and the D7 bands and dotnet bots do not apply. Pacing for this mode is tuned by playing it. Do not claim any win rate for it without a measured run.
+- **Rules for the builder:**
+  1. Prototype first, as its own scene with its own controller. Do not edit the grid game's scene or controller except to add a mode entry point.
+  2. Game computes the free set (nothing resting on top of the tile, with a stated rule and threshold, for example no other tile in contact above it) and reports it to Core after the pile settles and whenever it changes. Tiles that are still moving fast count as not free; state the speed threshold.
+  3. Same tile look (T10), same symbols, same shared materials (D3 as amended), same HUD and tray, same Reduce Motion, same D12 GC limits, and a cap on rigid bodies (start at 60 or fewer, stage-1 and stage-2 sizes first).
+  4. Symbol counts stay multiples of three. Tile symbols are spawned from a seed, so a level can be recreated, but the pile is not deterministic.
+  5. Original work only. No physics-game assets imported.
+- **Evidence expected:** a short capture or frame set of the pile settling, the free set read back against what is visibly uncovered, a Blocked tap on a covered tile, a win and a loss, the material count flat, and a GC reading during the pile settling (it will exceed the grid mode's steady 0 B; record it, do not hide it).
+- **Would change:** if the prototype feels worse than the grid game, or cannot hold frame time on the Android run (T7), keep it as an experiment and do not ship it.

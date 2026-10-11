@@ -6,6 +6,10 @@ A good, playable, visually pleasing tile game, with strong game feel as the defa
 triple-match game (see `PulseArenaGame/docs/MATCH_MVP.md`). It is original. It has no cash, no prizes, no gambling,
 and no third-party brands. The one-tap challenge game is a prototype and not the product.
 
+## Modes
+
+Grid mode is the MVP (rules above). Physics mode (D14) is a second mode, in prototype: loose tiles under gravity, the same tray, triples, scoring and win or lose from Core. It is not part of the Playable MVP checklist below until a human playtest says it is worth shipping.
+
 ## Player loop
 
 Tap a free tile. It moves to the tray. Three of a kind clear, which scores and builds a combo. Clear the board to win
@@ -62,6 +66,8 @@ Starting values. Tune them in playtests and record any change in `docs/DECISIONS
 
 Money of any kind, cash, prizes, sweepstakes, loot boxes with random paid items, licensed or third-party art or audio
 without a complete ledger row, social features, and network features.
+
+
 
 
 

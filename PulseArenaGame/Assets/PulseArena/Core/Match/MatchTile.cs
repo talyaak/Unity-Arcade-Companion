@@ -1,4 +1,4 @@
-namespace PulseArena.Core
+﻿namespace PulseArena.Core
 {
     /// One tile. (X, Y) is its grid cell. Layer orders tiles stacked in one cell: a higher layer sits on top.
     public sealed class MatchTile
@@ -12,6 +12,12 @@ namespace PulseArena.Core
             Layer = layer;
         }
 
+        /// A tile with no grid position, for physics mode where the view reports which tiles are free.
+        public static MatchTile Loose(int id, int symbol)
+        {
+            return new MatchTile(id, symbol, 0, 0, id);
+        }
+
         public int Id { get; }
         public int Symbol { get; }
         public int X { get; }
@@ -19,3 +25,4 @@ namespace PulseArena.Core
         public int Layer { get; }
     }
 }
+

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace PulseArena.Core
@@ -81,6 +81,7 @@ namespace PulseArena.Core
         private double _lastTime = double.NegativeInfinity;
         private double _lastClearTime = double.NegativeInfinity;
         private int _combo;
+        private HashSet<int> _reportedFree;
 
         public MatchBoard(IEnumerable<MatchTile> tiles, MatchRules rules)
         {
@@ -152,6 +153,32 @@ namespace PulseArena.Core
             }
 
             return count;
+        }
+
+        /// True once the view has reported a free set (physics mode). Until then the grid rule decides.
+        public bool UsesReportedFreeSet => _reportedFree != null;
+
+        /// Physics mode: the view reports which tiles nothing rests on. From the first call on, a tile is free only if
+        /// it is in the latest report. Core still decides every tap, the tray, triples, score and win or lose.
+        /// Ids that are not on the board are ignored. Call it again whenever the pile changes. The grid rule is not
+        /// used afterwards, so loose tiles can use any X, Y and Layer values (see MatchTile.Loose).
+        public void ReportFreeTiles(IEnumerable<int> freeTileIds)
+        {
+            if (freeTileIds == null)
+            {
+                throw new ArgumentNullException(nameof(freeTileIds));
+            }
+
+            var set = new HashSet<int>();
+            foreach (int id in freeTileIds)
+            {
+                if (_onBoard.ContainsKey(id))
+                {
+                    set.Add(id);
+                }
+            }
+
+            _reportedFree = set;
         }
 
         public bool IsFree(int tileId)
@@ -228,6 +255,11 @@ namespace PulseArena.Core
 
         private bool IsFree(MatchTile tile)
         {
+            if (_reportedFree != null)
+            {
+                return _reportedFree.Contains(tile.Id);
+            }
+
             foreach (MatchTile other in _onBoard.Values)
             {
                 if (other.X == tile.X && other.Y == tile.Y && other.Layer > tile.Layer)
@@ -279,3 +311,4 @@ namespace PulseArena.Core
         }
     }
 }
+

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
@@ -269,6 +269,82 @@ namespace PulseArena.Tests
             }
         }
 
+        // ---- Physics mode: the view reports the free set ----
+
+        private static MatchBoard LooseBoard(int symbols)
+        {
+            var tiles = new List<MatchTile>();
+            for (int id = 0; id < symbols * 3; id++)
+            {
+                tiles.Add(MatchTile.Loose(id, id / 3));
+            }
+
+            return new MatchBoard(tiles, Rules());
+        }
+
+        [Test]
+        public void Reported_TileNotInTheReport_IsBlocked_AndNothingChanges()
+        {
+            MatchBoard board = LooseBoard(2);
+            board.ReportFreeTiles(new[] { 0, 1 });
+
+            Assert.IsTrue(board.UsesReportedFreeSet);
+            Assert.IsFalse(board.IsFree(2));
+            Assert.AreEqual(MatchOutcome.Blocked, board.TapTile(2, 1).Outcome);
+            Assert.AreEqual(0, board.Tray.Count);
+            Assert.AreEqual(6, board.RemainingOnBoard);
+        }
+
+        [Test]
+        public void Reported_FreeTiles_PlayThroughTripleAndWin()
+        {
+            MatchBoard board = LooseBoard(1);
+            board.ReportFreeTiles(new[] { 0, 1, 2 });
+
+            board.TapTile(0, 1);
+            board.TapTile(1, 1.1);
+            MatchStep step = board.TapTile(2, 1.2);
+
+            Assert.AreEqual(MatchOutcome.Won, step.Outcome);
+            Assert.AreEqual(100, board.Score);
+        }
+
+        [Test]
+        public void Reported_NewReportReplacesTheOldOne_AndUnknownIdsAreIgnored()
+        {
+            MatchBoard board = LooseBoard(2);
+            board.ReportFreeTiles(new[] { 0, 99 });
+            Assert.IsFalse(board.IsFree(99));
+            Assert.IsTrue(board.IsFree(0));
+
+            board.ReportFreeTiles(new[] { 3 });
+
+            Assert.IsFalse(board.IsFree(0));
+            Assert.IsTrue(board.IsFree(3));
+            CollectionAssert.AreEqual(new[] { 3 }, board.FreeTileIds());
+        }
+
+        [Test]
+        public void Reported_NotCalled_GridRuleStillDecides()
+        {
+            MatchBoard board = StackedBoard();
+
+            Assert.IsFalse(board.UsesReportedFreeSet);
+            Assert.IsFalse(board.IsFree(2));
+        }
+
+        [Test]
+        public void Reported_TilesTakenEarlierStayGone_WhenTheReportStillNamesThem()
+        {
+            MatchBoard board = LooseBoard(2);
+            board.ReportFreeTiles(new[] { 0, 1, 2, 3 });
+            board.TapTile(0, 1);
+
+            board.ReportFreeTiles(new[] { 0, 1, 2, 3 });   // the view lags by a frame and still lists tile 0
+
+            Assert.IsFalse(board.IsFree(0));
+            Assert.AreEqual(MatchOutcome.Ignored, board.TapTile(0, 2).Outcome);
+        }
         // ---- Replay ----
 
         [Test]
@@ -370,3 +446,4 @@ namespace PulseArena.Tests
         }
     }
 }
+
