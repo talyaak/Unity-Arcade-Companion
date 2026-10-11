@@ -1,0 +1,55 @@
+run=C:\Dev\Unity-Arcade-Companion\PulseArenaGame\Builds\T11-Shots\PulseArenaGame.exe -t11-play -t11-stage2 -screen-width 1024 -screen-height 576 -t11-shot-falling s2-landscape-falling.png -t11-shot-pile s2-landscape-pile.png -t11-shot-end s2-landscape-end.png
+stage=2 totalTiles=21 bodiesAtStart=21 seed=20261011 chosenSeed=20261011 seedSkipped=0 allSymbols=False
+symbols=0:6 1:6 2:3 3:6 distinct=4
+policy=greedy reduceMotion=False
+settled=True settleSeconds=2.17
+spawnWaves=3 spawnTopFace=3.85 spawnOverlapPairs=0
+heap tilesAboveFloor=5 topFaceMax=1.53 spreadMax=3.20
+reportedFree=15 reportedCovered=6 rayCovered=4 disagreements=2 contactDisagreements=2 contactInsideDisagreements=1 denseDisagreements=0
+mismatch tile=0 reportedFree=False contactAbove=False contactInside=True dense=True centreRayCovered=True gapAbove=0.074
+mismatch tile=10 reportedFree=False contactAbove=False contactInside=False dense=True centreRayCovered=False gapAbove=0.207
+coveredTap id=0 outcome=Blocked
+coveredTapMovedDistance=0.0061
+materialsBefore=44 materialsAfterEnd=44
+state=Won tray=0 tilesCleared=21 score=2200 combo=7 bestCombo=7 remainingOnBoard=0 totalTiles=21 taps=21 blocked=0 playSeconds=2.7 bodies=0 endReason=state
+confettiEmitted=60 burstCount=21
+gcLevelStart=19094
+tap 0 id=1 symbol=2 outcome=Moved trayBefore=0 trayAfter=1 free=15 state=Playing
+tap 1 id=13 symbol=2 outcome=Moved trayBefore=1 trayAfter=2 free=14 state=Playing
+tap 2 id=3 symbol=3 outcome=Moved trayBefore=2 trayAfter=3 free=12 state=Playing
+tap 3 id=5 symbol=3 outcome=Moved trayBefore=3 trayAfter=4 free=11 state=Playing
+tap 4 id=11 symbol=3 outcome=Cleared trayBefore=4 trayAfter=2 free=11 state=Playing
+tap 5 id=4 symbol=0 outcome=Moved trayBefore=2 trayAfter=3 free=10 state=Playing
+tap 6 id=8 symbol=0 outcome=Moved trayBefore=3 trayAfter=4 free=10 state=Playing
+tap 7 id=9 symbol=0 outcome=Cleared trayBefore=4 trayAfter=2 free=9 state=Playing
+tap 8 id=6 symbol=1 outcome=Moved trayBefore=2 trayAfter=3 free=9 state=Playing
+tap 9 id=7 symbol=1 outcome=Moved trayBefore=3 trayAfter=4 free=8 state=Playing
+tap 10 id=15 symbol=1 outcome=Cleared trayBefore=4 trayAfter=2 free=7 state=Playing
+tap 11 id=12 symbol=0 outcome=Moved trayBefore=2 trayAfter=3 free=6 state=Playing
+tap 12 id=14 symbol=0 outcome=Moved trayBefore=3 trayAfter=4 free=5 state=Playing
+tap 13 id=17 symbol=0 outcome=Cleared trayBefore=4 trayAfter=2 free=4 state=Playing
+tap 14 id=10 symbol=2 outcome=Cleared trayBefore=2 trayAfter=0 free=6 state=Playing
+tap 15 id=0 symbol=1 outcome=Moved trayBefore=0 trayAfter=1 free=6 state=Playing
+tap 16 id=18 symbol=1 outcome=Moved trayBefore=1 trayAfter=2 free=5 state=Playing
+tap 17 id=19 symbol=1 outcome=Cleared trayBefore=2 trayAfter=0 free=3 state=Playing
+tap 18 id=2 symbol=3 outcome=Moved trayBefore=0 trayAfter=1 free=2 state=Playing
+tap 19 id=16 symbol=3 outcome=Moved trayBefore=1 trayAfter=2 free=1 state=Playing
+tap 20 id=20 symbol=3 outcome=Won trayBefore=2 trayAfter=0 free=1 state=Won
+hudStage=2
+hudScore=2200
+hudCleared=21 / 21
+hudBanner=Level cleared
+hudDetail=Score 2200
+hudRetryDisplay=None
+hudNextDisplay=Flex
+gcSettle frames=127 median=0 p90=392 max=19094 framesAllocating=18 totalBytes=29238
+gcPlay frames=191 median=0 p90=608 max=4105 framesAllocating=65 totalBytes=37945
+gcPlayMax=4105 tapFrame=False afterResult=False secondsAfterResult=-1.00
+screenshotFalling=s2-landscape-falling.png
+screenshotPile=s2-landscape-pile.png
+screenshotEnd=s2-landscape-end.png
+restart=NextStage restartStage=3 restartTotalTiles=30 restartBodies=30 restartState=Playing restartSettled=True restartSettleSeconds=2.67 restartReportedFree=21 restartTapOutcome=Moved
+materialsAfterRestart=44
+gcRestart frames=160 median=0 p90=728 max=20924 framesAllocating=28 totalBytes=42168
+exceptions=0
+consoleLogPath=C:/Users/TalYaakov/AppData/LocalLow/DefaultCompany/PulseArenaGame/Player.log

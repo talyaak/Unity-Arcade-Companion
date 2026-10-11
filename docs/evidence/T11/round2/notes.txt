@@ -1,0 +1,56 @@
+T11 round 2: scatter spawn, pile capture, free-set check and GC (the architect's feel note)
+Date: 2026-10-11. Unity 6000.4.0f1. Development standalone build build_e13525e43bfc (0 errors; 1 warning, the pipeline setting, unchanged). Scene: Assets/PulseArena/Scenes/Physics.unity (not in Build Settings).
+Starting point: the accepted prototype (3033e60; notes in ../notes.txt, which is round 1). The architect's feel note: s2-portrait-pile.png looked like a flat grid, with a spawn drop of 0.3. The architect's D15 (4d6ad1d) makes every symbol appear in every level, so the seed 20261012 layout in round 1 is stale.
+Probe: probe/T11Probe.cs is the exact source of this build (temporary; it is compiled from Assets/Temp, which git ignores). Results: runs/*.txt, one file per run. Captures: shots/*.png.
+
+WHAT CHANGED IN THE GAME (Game/Physics/PhysicsMatchController.cs)
+- Spawn: each tile starts at a random place over the plate, with a random turn about the vertical axis. Tiles of one wave keep 1.3 units apart centre to centre. A tile's footprint at any turn fits in a circle of radius 0.636, so two tiles in one wave cannot overlap at spawn. A wave that has no room after 60 tries per tile starts a higher wave.
+- Waves are 1.0 unit apart, plus up to 0.15 units of random height, so tiles of different waves do not overlap at spawn either.
+- Drop: the first wave starts 1.2 units above its resting height (was 0.3).
+- The walls rise above the highest spawn (1.5 units of margin).
+- Unchanged: which tile goes to which place (shuffled, as before), the free-set rule and thresholds (a 0.36 half width, 0.12 high box above the top face; 0.15 units/s; 1 rad/s; every 3 frames), the look, the materials, Reduce Motion, Core, and D15.
+- Harness: Quaternion.Euler added to the compile stubs. GameCompile: 0 errors, 14 warnings, as before.
+
+THE PILE (shots/s2-portrait-pile.png, s2-landscape-pile.png, s1-*-pile.png; falling frames at 0.4 s, shots/*-falling.png)
+- The tiles are tilted and partly overlapping, two or three deep in places, and some sit on the rim. The falling frame shows tiles in the air.
+- Numbers (every run): stage 1 has 2 spawn waves; its top face is at 1.06 units at most, with 4 tiles above floor level (centre above 0.7). Stage 2 has 3 waves; its top face is at 1.45 to 1.53 units, with 5 tiles above floor level. The pile spreads to 2.2 units (stage 1) and 3.2 units (stage 2) from the centre.
+- So it reads as a scattered, tilted pile, not a tall mound. Whether that is heap enough is for the architect to judge from the captures.
+- Spawn check: 0 overlapping pairs at spawn in every run (counted on the first frame of the level).
+- Settle time: stage 1 2.33 to 2.34 s; stage 2 2.16 to 2.67 s (the flat grid settled in 0.83 to 1.01 s). Restarts settled in 2.5 to 3.7 s.
+
+FREE SET AGAINST THE RAY TESTS (9 runs; checked at the first settle; stage 1 has 12 tiles, stage 2 has 21)
+The game's rule is a box: no body within 0.12 units above the top face, within 0.36 units of the centre. Four physical checks were run on each tile:
+- Centre ray: one ray up the centre, 1 unit long, from 0.02 above the face. Disagreements: 1 (stage 1), 2 to 3 (stage 2).
+- Nine rays across the top face, 0.33 apart, from 0.02 above the face, 0.1 long. Disagreements: 1 (stage 1), 2 (stage 2).
+- Nine rays from 0.01 inside the face, 0.13 long. Disagreements: 1 (stage 1), 1 to 2 (stage 2).
+- Dense check: 49 rays, 0.12 apart, across the whole box footprint, from 0.01 inside the face, 0.13 long. Disagreements: 0 in all 9 runs.
+Reading: the sparse checks sample the box at points 0.12 to 0.33 apart. A neighbour that touches the top face between two sample points, or a tilted corner, is inside the box and is missed by the rays. The mismatch lines in the run files show the dense check agreeing with the box in each case. The dense check was added in this round, after the sparse checks disagreed, so it was designed after seeing the mismatches. The architect should judge whether to accept it as the truth test. The sparse results are kept in the files for transparency.
+- Covered tap: Blocked in every run (tile id 0). With Reduce Motion on, the tile moved 0.0000 units. With it off, it moved 0.0003 to 0.0061 units: a blocked tap adds a small torque (a wobble), by design, and the pile moves with it.
+
+OUTCOMES (final set, one run each)
+- Stage 1, greedy, portrait and landscape: Won, score 1000, combo 4, 12 of 12 cleared.
+- Stage 2, greedy portrait: Lost (tray full after 16 taps, 9 cleared, score 600). Greedy landscape: Won (21 taps, 2200, combo 7). Careless: Lost (10 taps). Avoid: Lost (7 taps, score 0). Greedy with Reduce Motion: Lost (16 taps, 600). Avoid in portrait and in landscape: Lost (7 taps).
+- Stage 2 in this set: 7 runs, 1 won, 6 lost. These are not a sample. D14 forbids a win rate without a measured run, and none is claimed.
+- Repeatability: the same settings gave the same result in the first round-2 set and in this final set (greedy portrait: Lost, 600, 16 taps, level start 18,918 B; greedy landscape: Won, 2200, 21 taps). The aspect ratio changed the outcome for the same policy. The probe taps every 4 frames, so the frame rate sets when each tap lands. That is the likely cause; it was not tested.
+- Stage 1 cannot be lost (D15, accepted as the teaching stage).
+
+MATERIALS, EXCEPTIONS, REDUCE MOTION
+- Material count: 44 at the level start, at the end and after the restart, in every run.
+- Exceptions: 0 in all 9 runs. The probe counts exception and error log lines through each run, including the restart.
+- Reduce Motion: the reduce run lost, so the confetti check (0 on a win) was not repeated in round 2. Round 1 measured it (0, against 60 with it off).
+
+GC (ProfilerRecorder "GC Allocated In Frame", bytes; the probe's own work is not counted, as in round 1)
+- Level start (the first settle frame, which holds the game's StartLevel): stage 1 9,152 to 9,544 B; stage 2 18,526 to 19,094 B. Round 1 was 9.2 KB and 17.7 to 18.0 KB. D12 level-start limit: 50 KB. Met.
+- Restart start (the first frame after Next stage or Retry): 15,710 to 20,924 B. Met (limit 50 KB).
+- Settling: stage 1, 137 frames: median 0 B, p90 0 B. Stage 2, 127 to 157 frames: median 0 B, p90 392 to 728 B. The maximum in each run is the level-start frame. Besides the level start, the settle frames allocated 2.6 to 2.9 KB on stage 1 (over 8 to 10 frames) and 10.1 to 13.0 KB on stage 2 (over 17 to 21 frames). This is not steady 0 B. The D14 wording predicted it ("record it, do not hide it"). The cause was not traced. Candidates to check: Core's ReportFreeTiles builds a new set on every change, and the free set changes often while the pile falls; and contact handling in the physics engine.
+- Play (taps, and the 60 frames after the result): median 0 B; p90 0.46 to 0.73 KB; maximum 2.0 to 4.1 KB over the 9 runs. The D12 tap-frame limit (16 KB) is met.
+- Result window (the first frame after a win or loss; D12 clarification 2 allows 4 KB in the 0.5 s after a result): in this final set, those first frames allocated 2.0 to 3.2 KB. Earlier, in the probe set of build_7cbe70c1a473 (same game code), the first frame after a win (reduce motion on) allocated 9,082 B and the first frame after a loss (avoid) allocated 5,168 B. Those two frames are over the 4 KB allowance. This is the open GC item for the architect. It is not traced to a cause.
+
+WHAT WAS NOT VERIFIED
+- Frame time and Android (T7 is blocked); Play Mode; the pressed button look; a grid replay (the grid code is unchanged this round; D15 changed the grid layouts for each seed, which the grid's own tests cover).
+- The cause of the result-window spikes and of the settle allocations.
+- Whether the pile is heap enough. That needs the architect's look at the captures, or a player.
+- Whether the dense check is the right truth test. It is new this round.
+
+ROUND 1
+- docs/evidence/T11/ (notes.txt, runs/, shots/, probe/) is round 1, the accepted prototype. Its seed 20261012 layout is stale after D15.

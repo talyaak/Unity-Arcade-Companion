@@ -602,6 +602,7 @@ namespace UnityEngine
     public struct Quaternion
     {
         public static Quaternion identity => new Quaternion();
+        public static Quaternion Euler(float x, float y, float z) => new Quaternion();
     }
 
     public static class Random

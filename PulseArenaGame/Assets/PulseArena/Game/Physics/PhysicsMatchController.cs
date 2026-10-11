@@ -27,8 +27,13 @@ namespace PulseArena.Game
         private const float TileRadius = TileScale * 0.5f;
         private const float TileHalfHeight = TileScale * 0.36f;  // the slab's top and the emblem's top, 0.36 units above centre
         private const float CellPitch = 1.15f;                   // spawn cells, the same pitch as the grid game
-        private const float LayerPitch = 1.0f;                   // spawn height between stacked layers
-        private const float SpawnDrop = 0.3f;                    // each tile starts this far above its resting height
+        private const float WavePitch = 1.0f;                    // height between spawn waves: a tile of one wave cannot touch one of the next
+        private const float SpawnDrop = 1.2f;                    // the first wave starts this far above its resting height (was 0.3, a flat grid)
+        private const float SpawnJitter = 0.15f;                 // up to this much extra height per tile, so a wave does not drop in step
+        private const float SpawnSpacing = 1.3f;                 // centre to centre inside a wave: two tiles with any turn cannot overlap
+        private const float SpawnInset = 0.66f;                  // spawn centres stay this far inside the plate edge (a tile's footprint at any turn)
+        private const int SpawnTries = 60;                       // candidate places per tile before the wave is full
+        private const float WallMargin = 1.5f;                   // the walls stand this far above the highest spawn
         private const float FloorMargin = 0.6f;
         private const float WallHeight = 4f;
         private const float WallThickness = 0.4f;
@@ -107,7 +112,10 @@ namespace PulseArena.Game
         private GameObject _trayWell;
         private Vector3 _floorHalf;
         private Vector3 _wellHalf;
-        private int _maxLayer;
+        private readonly List<Vector3> _spawnPoints = new List<Vector3>();
+        private readonly List<float> _spawnTurns = new List<float>();
+        private int _spawnWaves;
+        private float _spawnTopFace;   // the top face of the highest tile at its spawn point
         private int _frame;
         private bool _pointerWasDown;
         private bool _reduceMotion;
@@ -129,6 +137,8 @@ namespace PulseArena.Game
 
         // Verification reads (the game does not use these).
         public int BodyCount => _bodies.Count;
+        public int SpawnWaves => _spawnWaves;
+        public float SpawnTopFace => _spawnTopFace;
         public int ReportedFreeCount => _reported.Count;
         public bool IsReportedFree(int tileId) => _reported.Contains(tileId);
         public Rigidbody BodyOf(int tileId) => _bodies.TryGetValue(tileId, out Rigidbody body) ? body : null;
@@ -243,8 +253,11 @@ namespace PulseArena.Game
 
             // Nothing is free until the pile settles. This empty report also switches the board to the reported free set.
             _board.ReportFreeTiles(Array.Empty<int>());
+            var random = new System.Random(unchecked((int)seed));
+            int[] order = ShuffledOrder(loose.Count, random);
+            PlanSpawn(loose.Count, random);
             LayoutFloor();
-            SpawnPile(loose, seed);
+            SpawnPile(loose, order);
             BuildFitPoints();
             FitCamera();
             RefreshTints();
@@ -469,7 +482,7 @@ namespace PulseArena.Game
 
         private void ClearTiles()
         {
-            // The old bodies are switched off first. Their replacements spawn at the same cells, so an old body that is still
+            // The old bodies are switched off first. Their replacements spawn at the same places, so an old body that is still
             // in the physics scene would overlap a new one and push it through the floor.
             foreach (KeyValuePair<int, Rigidbody> pair in _bodies)
             {
@@ -496,19 +509,10 @@ namespace PulseArena.Game
             _freeNow.Clear();
         }
 
-        // The pile: each tile starts in a cell of the level's grid, stacked by layer, a little above where it rests.
-        private void SpawnPile(IReadOnlyList<MatchTile> tiles, ulong seed)
+        // Which tile goes to which spawn place. Core's tiles come in symbol order, so without this, tiles of one symbol would be
+        // neighbours in the pile and the levels would be too easy.
+        private static int[] ShuffledOrder(int count, System.Random random)
         {
-            int count = tiles.Count;
-            if (count > MaxBodies)
-            {
-                throw new InvalidOperationException($"Physics mode allows at most {MaxBodies} rigid bodies; this level has {count}.");
-            }
-
-            var random = new System.Random(unchecked((int)seed));
-
-            // Shuffle which tile goes where. Core's tiles come in symbol order, so without this, tiles of one symbol would be
-            // neighbours in the pile and the levels would be too easy.
             int[] order = new int[count];
             for (int i = 0; i < count; i++)
             {
@@ -521,29 +525,90 @@ namespace PulseArena.Game
                 (order[i], order[j]) = (order[j], order[i]);
             }
 
-            int gridW = _spec.GridWidth;
-            int gridH = _spec.GridHeight;
-            int cells = gridW * gridH;
-            _maxLayer = 0;
+            return order;
+        }
+
+        // The spawn (D14 feel gap): each tile starts at a random place over the plate, with a random turn. Tiles of one wave keep
+        // SpawnSpacing apart, so none starts inside another. A wave that is full starts a higher one, so the pile falls as a heap
+        // and not as a flat grid. The plate is sized as LayoutFloor sizes it, because this runs before the floor is laid out.
+        private void PlanSpawn(int count, System.Random random)
+        {
+            _spawnPoints.Clear();
+            _spawnTurns.Clear();
+            float width = _spec.GridWidth * CellPitch + 2f * FloorMargin;
+            float depth = _spec.GridHeight * CellPitch + 2f * FloorMargin;
+            float halfX = width * 0.5f - SpawnInset;
+            float halfZ = depth * 0.5f - SpawnInset;
+            float highest = TopOffset + SpawnDrop;
+            int placed = 0;
+            int wave = 0;
+            while (placed < count)
+            {
+                int first = _spawnPoints.Count;
+                float baseY = TopOffset + SpawnDrop + wave * WavePitch;
+                while (placed < count)
+                {
+                    bool found = false;
+                    float x = 0f;
+                    float z = 0f;
+                    for (int attempt = 0; attempt < SpawnTries && !found; attempt++)
+                    {
+                        x = (float)(random.NextDouble() * 2.0 - 1.0) * halfX;
+                        z = (float)(random.NextDouble() * 2.0 - 1.0) * halfZ;
+                        found = true;
+                        for (int k = first; k < _spawnPoints.Count; k++)
+                        {
+                            float dx = _spawnPoints[k].x - x;
+                            float dz = _spawnPoints[k].z - z;
+                            if (dx * dx + dz * dz < SpawnSpacing * SpawnSpacing)
+                            {
+                                found = false;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (!found)
+                    {
+                        break;   // this wave is full: the next tile starts the next wave
+                    }
+
+                    float y = baseY + (float)random.NextDouble() * SpawnJitter;
+                    _spawnPoints.Add(new Vector3(x, y, z));
+                    _spawnTurns.Add((float)(random.NextDouble() * 360.0));
+                    highest = Math.Max(highest, y);
+                    placed++;
+                }
+
+                wave++;
+            }
+
+            _spawnWaves = wave;
+            _spawnTopFace = highest + TopOffset;
+        }
+
+        private void SpawnPile(IReadOnlyList<MatchTile> tiles, int[] order)
+        {
+            int count = tiles.Count;
+            if (count > MaxBodies)
+            {
+                throw new InvalidOperationException($"Physics mode allows at most {MaxBodies} rigid bodies; this level has {count}.");
+            }
+
             for (int i = 0; i < count; i++)
             {
-                int cell = i % cells;
-                int layer = i / cells;
-                _maxLayer = Math.Max(_maxLayer, layer);
-                float x = (cell % gridW - (gridW - 1) * 0.5f) * CellPitch + (float)(random.NextDouble() * 0.2 - 0.1);
-                float z = (cell / gridW - (gridH - 1) * 0.5f) * CellPitch + (float)(random.NextDouble() * 0.2 - 0.1);
-                float y = TopOffset + SpawnDrop + layer * LayerPitch;
-                CreateTile(tiles[order[i]].Id, new Vector3(x, y, z));
+                CreateTile(tiles[order[i]].Id, _spawnPoints[i], _spawnTurns[i]);
             }
         }
 
-        private void CreateTile(int tileId, Vector3 position)
+        private void CreateTile(int tileId, Vector3 position, float turn)
         {
             MatchTile tile = LooseTile(tileId);
             // The object is placed before any collider or body is added. A collider added at the origin (the floor's surface)
             // and moved afterwards gave the physics a sweep through the floor, which launched some tiles.
             var go = new GameObject("Tile " + tileId);
             go.transform.position = position;
+            go.transform.rotation = Quaternion.Euler(0f, turn, 0f);
             go.transform.localScale = new Vector3(TileScale, TileScale, TileScale);
             go.AddComponent<MeshFilter>().sharedMesh = _tileMeshes[tile.Symbol % _tileMeshes.Length];
             go.AddComponent<MeshRenderer>();
@@ -581,10 +646,11 @@ namespace PulseArena.Game
 
             float wallX = width * 0.5f + WallThickness * 0.5f;
             float wallZ = depth * 0.5f + WallThickness * 0.5f;
-            PlaceWall(0, new Vector3(wallX, WallHeight * 0.5f, 0f), new Vector3(WallThickness, WallHeight, depth + 2f * WallThickness));
-            PlaceWall(1, new Vector3(-wallX, WallHeight * 0.5f, 0f), new Vector3(WallThickness, WallHeight, depth + 2f * WallThickness));
-            PlaceWall(2, new Vector3(0f, WallHeight * 0.5f, wallZ), new Vector3(width + 2f * WallThickness, WallHeight, WallThickness));
-            PlaceWall(3, new Vector3(0f, WallHeight * 0.5f, -wallZ), new Vector3(width + 2f * WallThickness, WallHeight, WallThickness));
+            float wallHeight = Math.Max(WallHeight, _spawnTopFace + WallMargin);   // taller for a higher spawn, so no tile leaves over a wall
+            PlaceWall(0, new Vector3(wallX, wallHeight * 0.5f, 0f), new Vector3(WallThickness, wallHeight, depth + 2f * WallThickness));
+            PlaceWall(1, new Vector3(-wallX, wallHeight * 0.5f, 0f), new Vector3(WallThickness, wallHeight, depth + 2f * WallThickness));
+            PlaceWall(2, new Vector3(0f, wallHeight * 0.5f, wallZ), new Vector3(width + 2f * WallThickness, wallHeight, WallThickness));
+            PlaceWall(3, new Vector3(0f, wallHeight * 0.5f, -wallZ), new Vector3(width + 2f * WallThickness, wallHeight, WallThickness));
         }
 
         private void PlaceWall(int index, Vector3 position, Vector3 scale)
@@ -678,7 +744,7 @@ namespace PulseArena.Game
 
             _wavesLeft--;
             _waveTimer = ConfettiWaveSeconds;
-            _effects.ReleaseConfetti(_floorHalf.x, _floorHalf.z, (_maxLayer + 1) * LayerPitch + 2f);
+            _effects.ReleaseConfetti(_floorHalf.x, _floorHalf.z, _spawnTopFace + 2f);
         }
 
         private Quaternion FacingCamera()
@@ -734,7 +800,7 @@ namespace PulseArena.Game
         {
             _fitPoints.Clear();
             AddExtents(new Vector3(0f, -PlateThickness * 0.5f, 0f), _floorHalf);
-            float pileTop = (_maxLayer + 1) * LayerPitch + TopOffset + SpawnDrop;
+            float pileTop = _spawnTopFace;
             AddExtents(new Vector3(0f, pileTop * 0.5f, 0f), new Vector3(_floorHalf.x, pileTop * 0.5f, _floorHalf.z));
             for (int i = 0; i < _rules.TrayCapacity; i++)
             {

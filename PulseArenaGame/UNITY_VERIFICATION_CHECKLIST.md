@@ -181,14 +181,14 @@ Captures for every step are at 576 x 1024 (9:16) and 1920 x 1080 (16:9), in `doc
 - [ ] Watch item for the architect: the result-card slide allocates for about 18 frames after a win or loss (up to 2 KB a frame; 44.6 KB over the run). It is event work, but the D12 wording says 0 B on frames with no tap
 - [x] Player log: 0 exception lines in every run
 
-## Physics mode (T11; D14: a new mode beside the grid game; evidence in `docs/evidence/T11/`)
+## Physics mode (T11; D14: a new mode beside the grid game; round 1 accepted as a prototype, round 2 below; evidence in `docs/evidence/T11/`)
 Scene `Assets/PulseArena/Scenes/Physics.unity` (Pulse Arena > Build Physics Scene; not in Build Settings). Eight standalone Development runs on build_4614ccc2ed74; one result file per run in `docs/evidence/T11/runs/`.
 - [x] Pile: one rigid body per tile (BoxCollider 1 x 0.6 x 1 at scale 0.9; mass 1; damping 0.05 and 0.1; continuous dynamic), a floor, four walls and the tray well. Settles in 0.83 s (stage 1) and 1.00 to 1.01 s (stage 2). Captures: `shots/s2-portrait-falling.png` (0.4 s, already near rest), `shots/s2-portrait-pile.png`, `shots/s2-landscape-pile.png`, `shots/s1-*`
 - [x] Free set (D14 rule 2): no other body in a box 0.36 half width and 0.12 high above the top face; linear speed at most 0.15 units/s; angular speed at most 1 rad/s; recomputed every 3 frames and reported to Core when it changes. Core decides every tap
 - [x] Free set read back against an upward ray test at the first settle: 0 disagreements (12 tiles on stage 1, 21 on stage 2)
 - [x] A covered tap is Blocked and the tile does not move (0.0000 units) in every run
 - [x] Win on stage 1 and stage 2, both aspects (`shots/s2-portrait-end.png`): "Level cleared" and Next stage
-- [x] Loss on stage 2 (seed 20261012, four symbols, avoid policy): "Tray full" on tap 7, Retry shown (`shots/s2-portrait-avoid-allsymbols-seed20261011-end.png`)
+- [x] Loss on stage 2 (seed 20261012, four symbols, avoid policy): "Tray full" on tap 7, Retry shown (`shots/s2-portrait-avoid-allsymbols-seed20261011-end.png`). The seed 20261012 layout is stale after D15 (the generator changed); round 2 has its own losses
 - [x] Retry and Next stage after a clear start the new level (fix: the controller no longer keeps destroyed tile bodies); 0 exception lines in every run; a tap after the restart is accepted
 - [x] Material count flat: 44 at the start, at the end and after a restart
 - [x] Reduce Motion: confetti 0 (60 with it off), bursts kept (`shots/s2-portrait-reduce-end.png`)
@@ -199,4 +199,17 @@ Scene `Assets/PulseArena/Scenes/Physics.unity` (Pulse Arena > Build Physics Scen
 - [ ] The grid game was not replayed this round (its changes are the IMatchStatus interface and the physics hooks in TileView, which are off for the grid)
 - [ ] Stage 3 (reached by Next stage from stage 2) settled with one tap; not reviewed visually
 - [ ] No win rate claimed (D14). Three policies on one layout and one loss search are not a sample
-- [ ] Core finding for the architect: a loss needs four symbols. Stage 1 cannot be lost, and stage 2 cannot be lost when a symbol has no tiles (about half the stage 2 layouts; see `notes.txt`)
+- [x] Core finding answered by D15: every symbol appears in every level, so stage 2 can be lost on any seed. Stage 1 cannot be lost by design (the teaching stage, accepted)
+
+### Round 2: scatter spawn, pile capture, free set and GC (`docs/evidence/T11/round2/`, build_e13525e43bfc, 9 runs)
+- [x] Spawn: random places and random turns in waves (two or three), the first wave 1.2 units above rest (was 0.3). 0 overlapping pairs at spawn in every run
+- [x] Pile captured: falling at 0.4 s, settled, both aspects (`round2/shots/s2-portrait-pile.png`, `s2-landscape-pile.png`, `s1-*`). Tilted and scattered, two or three tiles deep in places; the top face is at 1.5 units at most, with 5 of 21 tiles above floor level. It reads as a pile, not a tall mound; the architect judges
+- [x] Free set against the dense physical check (49 rays across the whole box footprint): 0 disagreements in 9 runs. The sparse checks (centre ray; nine rays) disagree on 1 to 3 tiles per run, where a neighbour touches the top face between sample points. The dense check is new this round; see `round2/notes.txt`
+- [x] A covered tap is Blocked in every run. The tile moves 0.0000 units with Reduce Motion on, and up to 0.006 units with it off (the wobble is by design)
+- [x] Win on stage 1 (both aspects) and on stage 2 (landscape). Loss on stage 2 (avoid in both aspects; greedy, careless and Reduce Motion also lost). Next stage and Retry start the new level; 0 exception lines in every run
+- [x] Material count 44 at the start, at the end and after a restart
+- [x] GC level start: 9.2 to 9.5 KB (stage 1) and 18.5 to 19.1 KB (stage 2), limit 50 KB. Restart start 15.7 to 20.9 KB. Play: p90 0.46 to 0.73 KB, maximum 4.1 KB, limit 16 KB for taps
+- [ ] GC settle is not steady 0 B: median and p90 0 on stage 1; p90 0.39 to 0.73 KB on stage 2, and about 10 to 13 KB over 17 to 21 frames besides the level start. Recorded, not traced (D14 predicted it)
+- [ ] GC result window: the first frame after a result was 2.0 to 3.2 KB in this set, but 9.1 KB (win) and 5.2 KB (loss) in an earlier probe set of the same game code. D12 clarification 2 allows 4 KB. Open for the architect
+- [ ] Frame time, Android, Play Mode and the pressed button look: not verified (as in round 1)
+- [ ] The heap judgement, and whether the dense check is the truth test: the architect decides

@@ -1,0 +1,41 @@
+run=C:\Dev\Unity-Arcade-Companion\PulseArenaGame\Builds\T11-Shots\PulseArenaGame.exe -t11-play -t11-stage2 -t11-careless -screen-width 576 -screen-height 1024
+stage=2 totalTiles=21 bodiesAtStart=21 seed=20261011 chosenSeed=20261011 seedSkipped=0 allSymbols=False
+symbols=0:6 1:6 2:3 3:6 distinct=4
+policy=careless reduceMotion=False
+settled=True settleSeconds=2.50
+spawnWaves=3 spawnTopFace=3.85 spawnOverlapPairs=0
+heap tilesAboveFloor=5 topFaceMax=1.45 spreadMax=3.20
+reportedFree=15 reportedCovered=6 rayCovered=3 disagreements=3 contactDisagreements=2 contactInsideDisagreements=2 denseDisagreements=0
+mismatch tile=0 reportedFree=False contactAbove=False contactInside=False dense=True centreRayCovered=False gapAbove=-0.001
+mismatch tile=10 reportedFree=False contactAbove=False contactInside=False dense=True centreRayCovered=False gapAbove=0.115
+coveredTap id=0 outcome=Blocked
+coveredTapMovedDistance=0.0030
+materialsBefore=44 materialsAfterEnd=44
+state=Lost tray=7 tilesCleared=3 score=100 combo=1 bestCombo=1 remainingOnBoard=11 totalTiles=21 taps=10 blocked=0 playSeconds=1.7 bodies=18 endReason=state
+confettiEmitted=0 burstCount=3
+gcLevelStart=18918
+tap 0 id=9 symbol=0 outcome=Moved trayBefore=0 trayAfter=1 free=15 state=Playing
+tap 1 id=19 symbol=1 outcome=Moved trayBefore=1 trayAfter=2 free=15 state=Playing
+tap 2 id=14 symbol=0 outcome=Moved trayBefore=2 trayAfter=3 free=14 state=Playing
+tap 3 id=1 symbol=2 outcome=Moved trayBefore=3 trayAfter=4 free=12 state=Playing
+tap 4 id=8 symbol=0 outcome=Cleared trayBefore=4 trayAfter=2 free=11 state=Playing
+tap 5 id=13 symbol=2 outcome=Moved trayBefore=2 trayAfter=3 free=10 state=Playing
+tap 6 id=3 symbol=3 outcome=Moved trayBefore=3 trayAfter=4 free=8 state=Playing
+tap 7 id=18 symbol=1 outcome=Moved trayBefore=4 trayAfter=5 free=7 state=Playing
+tap 8 id=17 symbol=0 outcome=Moved trayBefore=5 trayAfter=6 free=6 state=Playing
+tap 9 id=12 symbol=0 outcome=Lost trayBefore=6 trayAfter=7 free=7 state=Lost
+hudStage=2
+hudScore=100
+hudCleared=3 / 21
+hudBanner=Tray full
+hudDetail=Score 100
+hudRetryDisplay=Flex
+hudNextDisplay=None
+gcSettle frames=149 median=0 p90=392 max=18918 framesAllocating=22 totalBytes=31910
+gcPlay frames=133 median=0 p90=728 max=2040 framesAllocating=39 totalBytes=27140
+gcPlayMax=2040 tapFrame=False afterResult=True secondsAfterResult=0.02
+restart=Retry restartStage=2 restartTotalTiles=21 restartBodies=21 restartState=Playing restartSettled=True restartSettleSeconds=3.17 restartReportedFree=10 restartTapOutcome=Moved
+materialsAfterRestart=44
+gcRestart frames=190 median=0 p90=0 max=15710 framesAllocating=18 totalBytes=26434
+exceptions=0
+consoleLogPath=C:/Users/TalYaakov/AppData/LocalLow/DefaultCompany/PulseArenaGame/Player.log
