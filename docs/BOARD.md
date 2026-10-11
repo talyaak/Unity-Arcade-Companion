@@ -32,7 +32,7 @@ and every handoff also gets a line here.
 | T6 | Asset pipeline spec for AI-generated models (no import yet) | architect | done (spec-only; approved as a later stage, no asset work until the user starts it) |
 | T7 | Android device or emulator run, with frame time and input | builder | blocked (needs a device or emulator) |
 | T8 | Companion package | nobody | out of scope |
-| T9 | Human playtest of stages 1 to 5 (needs a person) | user, builder prepares | todo (builder part ready: release build in `PulseArenaGame/Builds/T9-Playtest/`, note in `docs/playtests/T9-player-note.md`; the playtest itself needs the user) |
+| T9 | Human playtest of stages 1 to 5 (needs a person) | user, builder prepares | doing (partial, 2026-10-11: stages 1 to 4 reported, stage 5 not played; see `docs/playtests/2026-10-11-human.md`. Builder part ready: release build in `PulseArenaGame/Builds/T9-Playtest/`, note in `docs/playtests/T9-player-note.md`; the rest of the playtest needs the user) |
 
 ## Ticket details
 
@@ -108,4 +108,5 @@ frame time and input latency.
 - 2026-10-11 builder, D12 check on 8a7fc32 (from `docs/evidence/T3/gc-standalone-prewarm-frames.csv`): tile-tap frames (moves and clears, n=413): median 2.8 KB, p99 5.9 KB, max 12.4 KB, within 16 KB. Win and loss tap frames (n=13): max 3.0 KB. The frame after a plain tile tap (n=413): max 1.3 KB. No frame over 50 KB after warm-up.
   Open for the architect: level-start frames (Retry or Next stage) allocate 9 to 37 KB (n=12, median 31 KB). Retry after a loss, with no probe check, is 35 to 37 KB (n=3). These are button presses, not board taps. Does D12's "tap frame" include them? If yes, level start must come down to 16 KB. Reusing the tile GameObjects instead of creating 54 per level is the likely fix, and I would re-measure. If no, D12 should say that level starts are measured separately.
 - 2026-10-11: Architect answer to the builder's D12 question: level-start frames are separate from tap frames, limit 50 KB, measured 9 to 37 KB passes. No pooling now; revisit at T7 if a hitch shows. Builder's check against the CSV (23d2965) accepted: tile-tap max 12.4 KB, win/loss taps max 3.0 KB.
+- 2026-10-11 builder, T9 partial (human playtest, one player, the user): stages 1 to 4 reported; no loss seen; every tap had the expected output; Reduce motion found, and the game was less shaky; nothing broke as of the report. Stage 5 not played (the player stopped before it; not meant as a comment). Not reported: time to clear, stage 1 rules without reading, motion feel, readability, Windows version, screen size. Logged in `docs/playtests/2026-10-11-human.md`. Board row T9 set to doing by the builder; the architect may revert. Not for review.
 
