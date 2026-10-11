@@ -177,6 +177,7 @@ namespace UnityEngine
         public float magnitude => (float)System.Math.Sqrt(x * x + y * y + z * z);
 
         public static Vector3 up => new Vector3(0f, 1f, 0f);
+        public static Vector3 zero => new Vector3(0f, 0f, 0f);
         public static Vector3 down => new Vector3(0f, -1f, 0f);
 
         public static float Dot(Vector3 a, Vector3 b)
@@ -259,6 +260,33 @@ namespace UnityEngine
 
     public class Collider : Component
     {
+        public bool enabled = true;
+        public Rigidbody attachedRigidbody;
+    }
+
+    public enum RigidbodyInterpolation { None, Interpolate, Extrapolate }
+
+    public enum CollisionDetectionMode { Discrete, Continuous, ContinuousDynamic }
+
+    public class Rigidbody : Component
+    {
+        public float mass = 1f;
+        public float linearDamping;
+        public float angularDamping;
+        public RigidbodyInterpolation interpolation;
+        public CollisionDetectionMode collisionDetectionMode;
+        public bool isKinematic;
+        public Vector3 linearVelocity;
+        public Vector3 angularVelocity;
+        public Vector3 position;
+
+        public void AddTorque(Vector3 torque)
+        {
+        }
+
+        public void AddForce(Vector3 force)
+        {
+        }
     }
 
     public class Renderer : Component
@@ -368,6 +396,11 @@ namespace UnityEngine
 
     public static class Physics
     {
+        public static int OverlapBoxNonAlloc(Vector3 center, Vector3 halfExtents, Collider[] results, Quaternion orientation)
+        {
+            return 0;
+        }
+
         public static bool Raycast(Ray ray, out RaycastHit hit)
         {
             hit = default(RaycastHit);

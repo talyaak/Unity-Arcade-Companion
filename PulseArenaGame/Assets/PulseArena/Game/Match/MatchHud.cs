@@ -19,7 +19,9 @@ namespace PulseArena.Game
         private const string WarmUpText = "Stage Score Combo Tray Cleared Level cleared Tray full Retry Next stage "
             + "Reduce motion: on off 0123456789 / abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
-        [SerializeField] private MatchController _match;
+        [SerializeField] private MatchController _match;           // the grid game
+        [SerializeField] private PhysicsMatchController _physics;  // physics mode (D14); set in its own scene instead of _match
+        private IMatchStatus _source;                              // whichever of the two is set, read through the interface
         [SerializeField] private StyleSheet _style;
 
         private VisualElement _root;
@@ -58,6 +60,7 @@ namespace PulseArena.Game
         // Start runs after UIDocument has its panel, so the root element exists here.
         private void Start()
         {
+            _source = _physics != null ? (IMatchStatus)_physics : _match;
             VisualElement root = GetComponent<UIDocument>().rootVisualElement;
             _root = root;
             root.pickingMode = PickingMode.Ignore;   // taps on the board pass through the HUD to the tiles
@@ -140,7 +143,7 @@ namespace PulseArena.Game
             trayRow.Add(_tray);
             tray.Add(trayRow);
             VisualElement pipRow = MakeBox("hud-pips");
-            int capacity = _match != null ? _match.TrayCapacity : 0;
+            int capacity = _source != null ? _source.TrayCapacity : 0;
             _pips = new VisualElement[capacity];
             for (int i = 0; i < capacity; i++)
             {
@@ -171,7 +174,7 @@ namespace PulseArena.Game
 
         private void Update()
         {
-            if (_match == null || _match.Board == null || _stage == null)
+            if (_source == null || _source.Board == null || _stage == null)
             {
                 return;
             }
@@ -195,7 +198,7 @@ namespace PulseArena.Game
                 _root.EnableInClassList("hud-landscape", landscape);
             }
 
-            MatchBoard board = _match.Board;
+            MatchBoard board = _source.Board;
             if (board != _shownBoard)
             {
                 // A new level (Retry, Next stage, or the first one): its total can differ even when the values match,
@@ -209,7 +212,7 @@ namespace PulseArena.Game
                 _shownTray = -1;
             }
 
-            int stage = _match.StageNumber;
+            int stage = _source.StageNumber;
             int score = board.Score;
             int combo = board.Combo;
             int tray = board.Tray.Count;
@@ -246,7 +249,7 @@ namespace PulseArena.Game
             if (tray != _shownTray)
             {
                 _shownTray = tray;
-                _tray.text = tray + " / " + _match.TrayCapacity;
+                _tray.text = tray + " / " + _source.TrayCapacity;
                 RefreshPips(tray);
             }
 
@@ -286,7 +289,7 @@ namespace PulseArena.Game
                 }
             }
 
-            bool reduce = _match.ReduceMotion;
+            bool reduce = _source.ReduceMotion;
             if (reduce != _shownReduce)
             {
                 _shownReduce = reduce;
@@ -313,7 +316,7 @@ namespace PulseArena.Game
             _next.text = "Next stage";
             _banner.text = string.Empty;
             _detail.text = string.Empty;
-            _shownReduce = _match.ReduceMotion;
+            _shownReduce = _source.ReduceMotion;
             _motion.text = _shownReduce ? "Reduce motion: on" : "Reduce motion: off";
             _retry.style.display = DisplayStyle.None;
             _next.style.display = DisplayStyle.None;
@@ -321,17 +324,17 @@ namespace PulseArena.Game
 
         private void OnRetry()
         {
-            _match.Retry();
+            _source.Retry();
         }
 
         private void OnNextStage()
         {
-            _match.NextStage();
+            _source.NextStage();
         }
 
         private void OnToggleMotion()
         {
-            _match.ToggleReduceMotion();
+            _source.ToggleReduceMotion();
         }
 
         private static VisualElement MakeBox(params string[] classes)

@@ -8,7 +8,7 @@ namespace PulseArena.Game
 {
     /// Runs one match level in the scene. It builds 3D tiles from Core's level, sends taps to Core, and plays back what Core
     /// reports. It never decides blocking or matches. Core is the only source of truth for what is free and what clears.
-    public sealed class MatchController : MonoBehaviour
+    public sealed class MatchController : MonoBehaviour, IMatchStatus
     {
         private const float CellSpacing = 1.15f;
         private const float TileHeight = 0.6f;       // stack spacing: a slab is 0.6 units thick (0.54 at TileScale), so the layers read as separate tiles

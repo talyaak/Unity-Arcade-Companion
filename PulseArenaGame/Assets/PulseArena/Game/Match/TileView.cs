@@ -40,6 +40,7 @@ namespace PulseArena.Game
         private Material _shownBody;             // what the renderer shows right now
         private Material _shownEmblem;
         private readonly Material[] _slots = new Material[2];   // reused, so a tap does not allocate an array
+        private bool _physical;                  // physics mode (D14): the rigid body owns the position while the tile is in the pile
 
         public int TileId { get; private set; }
 
@@ -116,6 +117,23 @@ namespace PulseArena.Game
             _slots[0] = body;
             _slots[1] = emblem;
             _renderer.sharedMaterials = _slots;
+        }
+
+        /// Physics mode (D14): while the tile is in the pile, its rigid body owns the position. This view then writes only its
+        /// colour, scale and flash, so the physics is not overwritten every frame.
+        public void AttachToPhysics()
+        {
+            _physical = true;
+        }
+
+        /// The tile has left the pile (its body is off). The view takes the position back and animates from where the tile is.
+        public void ReleaseFromPhysics()
+        {
+            _physical = false;
+            _position = transform.position;
+            _from = _position;
+            _target = _position;
+            _moveT = 1f;
         }
 
         public void Squash()
@@ -195,7 +213,11 @@ namespace PulseArena.Game
                 }
 
                 transform.localScale = new Vector3(cleared, cleared, cleared);
-                transform.position = _position;
+                if (!_physical)
+                {
+                    transform.position = _position;
+                }
+
                 return;
             }
 
@@ -284,7 +306,10 @@ namespace PulseArena.Game
             }
 
             transform.localScale = new Vector3(scale, scale, scale);
-            transform.position = shown;
+            if (!_physical)
+            {
+                transform.position = shown;
+            }
         }
     }
 }

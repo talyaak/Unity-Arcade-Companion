@@ -1,0 +1,88 @@
+T11 physics mode prototype (D14): evidence and notes
+Date: 2026-10-11. Unity 6000.4.0f1, Built-in render pipeline. Scene: Assets/PulseArena/Scenes/Physics.unity (built by Pulse Arena > Build Physics Scene; not added to Build Settings).
+Build: build_4614ccc2ed74, Development standalone, Builds/T11-Shots (git-ignored). Result: Succeeded, 0 errors, 1 warning ("No RuntimePipelineConfig asset found", a project setting that this round did not change).
+Probe: probe/T11Probe.cs is the exact source of that build. It is temporary: it lived in Assets/Temp (git-ignored) and was removed from Assets after the runs. Results: runs/*.txt (one probe result file per run). Captures: shots/*.png.
+
+WHAT IS IN THE BUILD
+- PhysicsMatchController (Game/Physics): one rigid body per tile. BoxCollider 1 x 0.6 x 1 at scale 0.9; Rigidbody mass 1, linear damping 0.05, angular damping 0.1, interpolate, continuous dynamic. An invisible floor box under the plate (1 unit thick) and four walls keep the pile in. MaxBodies = 60, checked at spawn.
+- Free set (the game computes it; Core decides everything else, D14 rule 2). A tile is free when all three hold:
+  (a) no other body overlaps a box above its top face: 0.36 units half width, 0.12 units high (RestHalfWidth, RestGap);
+  (b) its linear speed is at most 0.15 units/s (SettledSpeed);
+  (c) its angular speed is at most 1 rad/s (SettledSpin).
+  The set is recomputed every 3 frames from the start of the level and reported to Core (MatchBoard.ReportFreeTiles) when it changes. The level starts with an empty report, so nothing is tappable until the first report. A tile that comes to rest while the pile is still falling can be reported free before the pile has settled.
+- Taps go to Core (MatchBoard.TapTile). A covered tap is Blocked: the tile does not move. It shows the shared red flash, plus a small wobble when Reduce Motion is off.
+- Tiles keep the T10 look and the shared materials. A covered tile is dimmed by the grid's factor (0.45 luminance).
+- HUD: the same UI Toolkit HUD as the grid game, reading IMatchStatus. The grid controller implements the same interface.
+- Stages: stage 1 (12 tiles) and stage 2 (21 tiles) were played. Next stage from stage 2 goes to stage 3 (30 tiles); it was run once (see the restart column) and is outside the stage 1 and 2 scope.
+
+FIX MADE IN THIS ROUND
+- Retry and Next stage after a clear. The controller kept a reference to every tile body, including the bodies of tiles whose GameObject had been destroyed when their clear finished. ClearTiles then set isKinematic on a destroyed body (MissingReferenceException), so the new stage did not start. The fix removes a body from the controller's list when its view is removed on a clear, and ClearTiles skips destroyed bodies.
+- This was found by reading the code after the first run. The earlier probe never restarted, so the failure was not reproduced in a run. The restart runs below were run with the fix and show exceptions=0.
+
+RUNS (build_4614ccc2ed74; each row is one file in runs/)
+run                                          layout                          policy    screen     result                         settle  restart after the result
+s1-portrait-greedy                           stage 1, 12 tiles               greedy    576x1024   Won, score 1000, combo 4       0.83 s  Next stage: stage 2 (21), settled 1.00 s, one tap Moved
+s1-landscape-greedy                          stage 1, 12 tiles               greedy    1024x576   Won, score 1000, combo 4       0.83 s  Next stage: stage 2 (21), settled 1.00 s, one tap Moved
+s2-portrait-greedy                           stage 2, 21 tiles               greedy    576x1024   Won, score 2200, combo 7       1.01 s  Next stage: stage 3 (30), settled 1.00 s, one tap Moved
+s2-landscape-greedy                          stage 2, 21 tiles               greedy    1024x576   Won, score 2200, combo 7       1.00 s  Next stage: stage 3 (30), settled 1.00 s, one tap Moved
+s2-portrait-careless                         stage 2, 21 tiles               careless  576x1024   Won, score 2200, combo 7       1.00 s  Next stage: stage 3 (30), settled 1.00 s, one tap Moved
+s2-portrait-avoid                            stage 2, 21 tiles               avoid     576x1024   Won, score 2200, combo 7       1.00 s  Next stage: stage 3 (30), settled 1.00 s, one tap Moved
+s2-portrait-reduce                           stage 2, 21 tiles               greedy    576x1024   Won, score 2200, combo 7       1.00 s  Next stage: stage 3 (30), settled 1.00 s, one tap Moved
+s2-portrait-avoid-allsymbols-seed20261011    stage 2, 21 tiles, 4 symbols    avoid     576x1024   Lost on tap 7 (tray 7/7, no triple)  1.00 s  Retry: stage 2 (21), settled 1.00 s, one tap Moved
+
+Every run: exceptions=0 (the probe counts exception and error log lines through the whole run, restart included), materials 44 at the start, at the end and after the restart, reportedFree and the ray check agree (0 disagreements), the covered tap is Blocked and the tile moves 0.0000 units.
+
+WHY EVERY WIN LOOKS THE SAME ON SEED 20261011
+- Seed 20261011 gives symbols 0:9 1:9 2:0 3:3. Symbol 2 has no tiles. A loss is a tray of 7 with no triple, and with three symbols at most six tiles fit without one, so a triple always forms first. On this layout no policy can lose, and all three policies won.
+- The three policies still play different games. Tap ids in order:
+  greedy:   0 1 5 3 2 7 4 9 8 11 12 10 14 16 19 15 17 18 6 13 20
+  careless: 8 19 15 0 7 16 1 20 17 11 6 18 9 3 13 5 12 4 10 2 14
+  avoid:    0 3 4 1 2 9 5 10 16 7 8 11 12 15 17 6 19 20 14 18 13
+- The score is the same because each win is seven clears in one combo chain. Points per clear are 100 x min(combo, 4), so 100 x (1+2+3+4+4+4+4) = 2200. The chain breaks only when two clears are more than ComboWindowSeconds (3.0 s) apart, and the probe taps every 4 frames, so it never breaks. The equal scores come from the chain, not from the policy being ignored.
+
+THE LOSS (D14 needs one)
+- Seed 20261011 cannot be lost. The probe searched start seeds with -t11-allsymbols, using Core's generator before the game starts. Seed 20261011 is skipped (no symbol 2). The first layout with all four symbols is seed 20261012 (symbols 0:3 1:3 2:6 3:9).
+- The avoid policy (take the free tile whose symbol has the fewest tiles in the tray) filled the tray. Tapped symbols 0 2 3 1 3 2 0 give tray counts 2, 1, 2, 2 (no triple): seven tiles, Lost on tap 7. The HUD shows "Tray full", score 0, Retry shown, Next stage hidden (shots/s2-portrait-avoid-allsymbols-seed20261011-end.png).
+- Retry then started stage 2 with a new clock seed: settled in 1.00 s, one tap Moved, 0 exceptions.
+
+D14 EVIDENCE LIST
+1. Pile settling: shots/s2-portrait-falling.png (0.4 s after start; the spawn drop is only 0.3 units, so the tiles are already close to rest), shots/s2-portrait-pile.png and shots/s2-landscape-pile.png (settled). Stage 1 in shots/s1-*. Settle time: 0.83 s (stage 1), 1.00 to 1.01 s (stage 2), measured in every run.
+2. Free set read back against what is visibly uncovered: at the first settle, every tile was checked with an upward ray from its top face. Stage 1: 9 reported free, 3 covered, 3 ray-covered. Stage 2: 16 reported free, 5 covered, 5 ray-covered. Disagreements 0 in all eight runs. This check runs once per run, at the first settle; it is not repeated after taps or after a restart.
+3. Blocked tap on a covered tile: coveredTap outcome Blocked in every run (stage 1 id 0; stage 2 id 2; loss run id 7). The body moved 0.0000 units in all of them.
+4. Win: shots/s1-portrait-end.png and shots/s2-portrait-end.png ("Level cleared", Next stage shown).
+5. Loss: shots/s2-portrait-avoid-allsymbols-seed20261011-end.png ("Tray full", Retry shown).
+6. Material count flat: 44 after the level starts, at the end and after the restart, in every run.
+7. GC during settling: recorded below, not hidden.
+8. Reduce Motion: confetti 0 with it on (60 with it off, in the careless and avoid runs); bursts kept (21). shots/s2-portrait-reduce-end.png.
+
+GC (ProfilerRecorder "GC Allocated In Frame", bytes per frame; Development build)
+- The probe's own work is not in these numbers. Screenshot frames and the frame after a probe measurement are not sampled. Tap data are stored as ints and written after the run. The probe's Report runs in a frame that is not sampled.
+- Level start (the first settle frame, which holds the game's StartLevel): 9,152 B for stage 1; 17,726 to 17,950 B for stage 2. D12 level-start limit: 50 KB. Met.
+- Settling frames (stage 1: 47 frames; stage 2: 57 to 59 frames): median 0, p90 0, max equal to the level-start frame. Three or four more frames allocate, 1.8 to 2.7 KB in total. Not traced to a cause.
+- Play frames (taps, plus the 60 frames after the result; 121 to 177 frames): median 0; p90 462 to 662 B; max 2,528 to 4,833 B. D12 tap-frame limit 16 KB: met. The 4,833 B maximum (stage 1, landscape) is not traced to a tap or to a result frame, so it is not checked against the 4 KB result-window allowance (D12 clarification 2).
+- Restart frames (the first frame after Next stage or Retry): 15,486 to 20,924 B. Under the 50 KB level-start limit.
+- Per-tap game allocation (Tap builds small lists and popup strings) is included in the play figures.
+
+CHECKS
+- Unity: Editor recompile 0 errors, after the probe was removed from Assets. build_4614ccc2ed74: 0 errors, 1 warning (the pipeline setting above).
+- Player log: exceptions=0 in all eight runs.
+- CoreTests (dotnet test): 114 of 114 pass.
+- GameCompile (dotnet build of PulseArena.GameCompile.csproj): Build succeeded, 0 errors. 14 warnings: serialized fields that Unity sets, and one unused stub event.
+
+NOT VERIFIED
+- Frame time: not measured in this round. The frame budget for physics mode belongs to the Android run (T7), which stays blocked.
+- No Android run, and no Play Mode run in the Editor (the Editor's frames did not advance in earlier checks). All physics numbers come from standalone runs.
+- The ray check runs once per run, at the first settle. The free set during play is not checked against physics beyond that.
+- Pressed button look: not captured (carry-over from T10).
+- Win rate: not claimed. Three policies on one layout and one loss search are not a sample, and D14 forbids a win rate without a measured run.
+- Stage 3 (30 tiles) was reached by Next stage and settled with one tap; it was not reviewed visually.
+- The grid game was not replayed in this round. Its changes are the IMatchStatus interface on MatchController and the physics hooks in TileView, which are off for the grid (code read only).
+- The pile is not deterministic (D14). The seed fixes the symbols and the spawn order, and the physics result of a run is not repeated here.
+
+FINDINGS FOR THE ARCHITECT (Core and generator; not changed here)
+1. A loss needs at least four symbols in the level. With three symbols, at most six tiles fit in the tray without a triple, so a tray of seven always forms one first. Stage 1 (three symbols) cannot be lost by the tray rule, in the grid game or in physics mode.
+2. The generator draws each triple's symbol independently (MatchLevelGenerator: random.NextInt(spec.SymbolCount) per triple). For stage 2 (four symbols, seven triples), all four symbols appear in 8,400 of 16,384 equally likely draws, about 51 percent. The other layouts have a symbol with no tiles, and a stage with such a layout cannot be lost. Normal play seeds from the clock (Start, Retry, Next stage), so about half of the stage 2 layouts a player can get cannot be lost. Seed 20261011, used for the win runs, is one of them.
+3. Decision needed from the rule owner: guarantee that each symbol appears at least once in a level, or accept that three-symbol layouts cannot be lost. Nothing was changed in Core or in the stage specs.
+
+PROBE MISTAKE (disclosed)
+- During this round the probe's source, with the tap log, was deleted from Assets before it was copied to docs. The probe was rewritten in full, and every run above comes from one build of that source (build_4614ccc2ed74). Results from the earlier build were moved aside and are not evidence.

@@ -180,3 +180,23 @@ Captures for every step are at 576 x 1024 (9:16) and 1920 x 1080 (16:9), in `doc
 - [x] GC (`-probe-gc`, 8,999 frames): D12 limits met. Board taps max 5,724 B (limit 16 KB); level start max 41,986 B (limit 50 KB); no frame over 50 KB after the 300-frame warm-up. Steady frames median and p90 0 B
 - [ ] Watch item for the architect: the result-card slide allocates for about 18 frames after a win or loss (up to 2 KB a frame; 44.6 KB over the run). It is event work, but the D12 wording says 0 B on frames with no tap
 - [x] Player log: 0 exception lines in every run
+
+## Physics mode (T11; D14: a new mode beside the grid game; evidence in `docs/evidence/T11/`)
+Scene `Assets/PulseArena/Scenes/Physics.unity` (Pulse Arena > Build Physics Scene; not in Build Settings). Eight standalone Development runs on build_4614ccc2ed74; one result file per run in `docs/evidence/T11/runs/`.
+- [x] Pile: one rigid body per tile (BoxCollider 1 x 0.6 x 1 at scale 0.9; mass 1; damping 0.05 and 0.1; continuous dynamic), a floor, four walls and the tray well. Settles in 0.83 s (stage 1) and 1.00 to 1.01 s (stage 2). Captures: `shots/s2-portrait-falling.png` (0.4 s, already near rest), `shots/s2-portrait-pile.png`, `shots/s2-landscape-pile.png`, `shots/s1-*`
+- [x] Free set (D14 rule 2): no other body in a box 0.36 half width and 0.12 high above the top face; linear speed at most 0.15 units/s; angular speed at most 1 rad/s; recomputed every 3 frames and reported to Core when it changes. Core decides every tap
+- [x] Free set read back against an upward ray test at the first settle: 0 disagreements (12 tiles on stage 1, 21 on stage 2)
+- [x] A covered tap is Blocked and the tile does not move (0.0000 units) in every run
+- [x] Win on stage 1 and stage 2, both aspects (`shots/s2-portrait-end.png`): "Level cleared" and Next stage
+- [x] Loss on stage 2 (seed 20261012, four symbols, avoid policy): "Tray full" on tap 7, Retry shown (`shots/s2-portrait-avoid-allsymbols-seed20261011-end.png`)
+- [x] Retry and Next stage after a clear start the new level (fix: the controller no longer keeps destroyed tile bodies); 0 exception lines in every run; a tap after the restart is accepted
+- [x] Material count flat: 44 at the start, at the end and after a restart
+- [x] Reduce Motion: confetti 0 (60 with it off), bursts kept (`shots/s2-portrait-reduce-end.png`)
+- [x] GC against the D12 limits: level start 9.2 KB (stage 1) and 17.7 to 18.0 KB (stage 2), limit 50 KB. Settling median and p90 0 B, the level start is the settle maximum (recorded, not hidden). Play frames: p90 0.46 to 0.66 KB, maximum 4.8 KB, limit 16 KB for taps; that 4.8 KB frame is not traced to a tap or a result frame
+- [x] Build and tests: Editor recompile 0 errors; standalone 0 errors (1 warning, a pipeline setting); CoreTests 114 of 114; GameCompile 0 errors
+- [ ] Frame time: not measured (device work, T7, is blocked)
+- [ ] Pressed button look: not captured (carry-over from T10)
+- [ ] The grid game was not replayed this round (its changes are the IMatchStatus interface and the physics hooks in TileView, which are off for the grid)
+- [ ] Stage 3 (reached by Next stage from stage 2) settled with one tap; not reviewed visually
+- [ ] No win rate claimed (D14). Three policies on one layout and one loss search are not a sample
+- [ ] Core finding for the architect: a loss needs four symbols. Stage 1 cannot be lost, and stage 2 cannot be lost when a symbol has no tiles (about half the stage 2 layouts; see `notes.txt`)
