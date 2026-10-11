@@ -1,0 +1,6 @@
+200 text/html http://127.0.0.1:8765/
+200 application/javascript http://127.0.0.1:8765/Build/WebGL.loader.js
+200 application/javascript http://127.0.0.1:8765/Build/WebGL.framework.js
+200 application/wasm http://127.0.0.1:8765/Build/WebGL.wasm
+404 text/plain http://127.0.0.1:8765/favicon.ico
+200 application/octet-stream http://127.0.0.1:8765/Build/WebGL.data

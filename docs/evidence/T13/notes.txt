@@ -1,0 +1,38 @@
+T13 Stage 0: WebGL build and phone link (D18). Builder notes, 2026-10-11.
+
+WHAT WAS BUILT
+- PulseArenaBuild.BuildWebGL (Assets/PulseArena/Tooling/PulseArenaBuild.cs), menu Pulse Arena > Build WebGL. It is in the global namespace, so the -executeMethod name is PulseArenaBuild.BuildWebGL, as D18 says.
+- Scenes: an explicit list, Match first, then Challenge (D18 item 3, the architect's amendment). Build Settings (ProjectSettings/EditorBuildSettings.asset) is not read and not changed. The first screen is Match. Challenge has no path from Match in the build; T12 adds the title screen.
+- Page template: Assets/WebGLTemplates/PulseArena/index.html. The canvas fills the browser window. Unity keeps the render target matched to the canvas (the loader's default). The canvas starts at the portrait size 1080x1920. Phones use devicePixelRatio 1, the same choice as Unity's Default template; desktop browsers keep their ratio. A load failure shows its message on the loading screen (no alert()).
+- Touch: the game reads Pointer.current (MatchController, PhysicsMatchController), so touch arrives through the Input System's pointer. Checked only with emulated touch (see below).
+- ProjectSettings.asset (announced; WebGL fields only, checked with git diff): compression Gzip to Disabled; webGLTemplate APPLICATION:Default to PROJECT:PulseArena; defaultScreenWidthWeb and defaultScreenHeightWeb 960x600 to 1080x1920. Nothing else changed.
+- Output: PulseArenaGame/Builds/WebGL (ignored by git). Sizes are in build-log.txt.
+
+BUILD (build-log.txt)
+- Result: Succeeded (Unity 6000.4.0f1, Editor open, menu run). Summary: 2 errors, 1 warning, 40,265,742 bytes.
+- The 2 counted errors are the two MCP timeout messages ("Failed to handle /api/exec request: Main thread operation timed out after 60000ms") raised while the build ran. They are not build steps. The 1 warning is the known "No RuntimePipelineConfig asset" warning, which every Player build prints.
+- Timing: the build ran from about 13:25 to 13:38. The Bee backend looked idle from about 13:26 to 13:33, then the wasm optimizer ran (about 1.15 GB, pid 27908, per the architect's note) until the files were written at 13:38. The menu call timed out after 60 s, as expected for a long build; it was not run again.
+- Editor target: Standalone to WebGL for the build, then back to Standalone (both switches completed).
+
+LOCAL CHECK (local-check/; the first run is in run1-taps-missed-board/)
+- Headless Edge with a DevTools script: 390x844 CSS px, device pixel ratio 1, Android user agent, touch emulation on. Served by tools/ship-webgl.mjs on 127.0.0.1 with --no-tunnel and --no-notify.
+- Loads: loader hidden, progress 100%, no message. Exceptions: 0.
+- First screen (first-screen.png): Match, stage 1, cleared 0 of 12, tray 0 of 7.
+- Emulated taps (after-taps.png): four taps on the front row of the first board. The tray reads 4 of 7 afterwards. The first run's taps were aimed below the board and changed nothing; that run is kept in run1-taps-missed-board/. The taps were a builder choice, not a test of the rule.
+- Console: 0 exceptions. One error line: a 404 for /favicon.ico (the template has no icon). Warnings: the apple-mobile-web-app-capable meta is deprecated (cosmetic); AudioContext was not allowed to start before a user gesture (expected in headless).
+- HTTP: index, loader, framework, wasm and data return 200. Only favicon.ico is 404.
+
+TUNNEL (tunnel-check.txt, tunnel-check-run/; the host is redacted in every file in the repo)
+- tools/ship-webgl.mjs started the Cloudflare quick tunnel, printed the public URL, and sent the ntfy message with the shared helper (notify-dev-url.mjs). The topic is not written here. The log line for the send has the topic redacted.
+- Through the tunnel: GET / and the four model files return 200. Byte counts equal the files on disk (index.html 4,066; loader 26,982; framework 441,211; data 6,436,823; wasm 33,356,660).
+- The same headless check against the public URL: loads, 0 exceptions, the same single favicon 404, and the emulated taps change the screen.
+- The link works only while the script runs. Stopping the script, closing its terminal, or a memory reap by the system ends it.
+
+NOT VERIFIED
+- A real phone. The user confirms that the ntfy message arrived, that the game opens, and that taps work on the phone. The builder has not run it on a phone.
+- Touch feel, frame time, GC and battery on a phone browser. This WebGL run is not T7 evidence (D18 item 5).
+- Android (T7 is blocked: no device, no installs).
+- The batch path (-executeMethod with the Editor closed). The Editor was open, so the project lock blocks a second Unity, and the batch path was not run.
+- A full level won or lost in the browser build. The check covered the first screen and four taps only.
+- The favicon 404 and the deprecated meta are cosmetic. They need a template change and a rebuild, so they are left for the next template change.
+- Landscape phones: no orientation lock is set; the browser decides.

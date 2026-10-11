@@ -1,0 +1,13 @@
+Public check through the Cloudflare quick tunnel (host redacted in this file). Checked 2026-10-11T11:00:41Z UTC.
+Format: GET path -> HTTP status, bytes received, content type
+GET / -> 200 4066 text/html; charset=utf-8
+GET /Build/WebGL.loader.js -> 200 26982 application/javascript
+GET /Build/WebGL.framework.js -> 200 441211 application/javascript
+GET /Build/WebGL.data -> 200 6436823 application/octet-stream
+GET /Build/WebGL.wasm -> 200 33356660 application/wasm
+On disk (Builds/WebGL, bytes):
+  index.html 4066
+  Build/WebGL.loader.js 26982
+  Build/WebGL.framework.js 441211
+  Build/WebGL.data 6436823
+  Build/WebGL.wasm 33356660

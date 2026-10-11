@@ -1,0 +1,21 @@
+T13 WebGL build log (PulseArenaBuild.BuildWebGL), Unity 6000.4.0f1, Windows, Editor open (menu run). Build ran about 13:25 to 13:38 local time on 2026-10-11.
+Scenes (explicit list, D18 item 3; Build Settings and its order not read or changed):
+  1. Assets/PulseArena/Scenes/Match.unity (first screen)
+  2. Assets/PulseArena/Scenes/Challenge.unity
+Player Settings set by the method: WebGL compression Disabled; template PROJECT:PulseArena; default web screen 1080x1920.
+Output: PulseArenaGame/Builds/WebGL (git-ignored).
+--- Summary line from the method:
+[PulseArenaBuild] WebGL Succeeded: 2 errors, 1 warnings, 40265742 bytes, scenes Assets/PulseArena/Scenes/Match.unity, Assets/PulseArena/Scenes/Challenge.unity, output C:\Dev\Unity-Arcade-Companion\PulseArenaGame\Builds\WebGL
+--- Editor.log lines inside the build window (filtered; stack traces left out):
+Pipeline: No RuntimePipelineConfig asset found (Project Settings > Pipeline > Runtime). Pipeline will be disabled in Player builds.
+Failed to handle /api/exec request: Main thread operation timed out after 60000ms
+Failed to handle /api/exec request: Main thread operation timed out after 60000ms
+Build Finished, Result: Success.
+[PulseArenaBuild] WebGL Succeeded: 2 errors, 1 warnings, 40265742 bytes, scenes Assets/PulseArena/Scenes/Match.unity, Assets/PulseArena/Scenes/Challenge.unity, output C:\Dev\Unity-Arcade-Companion\PulseArenaGame\Builds\WebGL
+--- Reading the counted errors: the summary says 2 errors. Both are the 'Failed to handle /api/exec request: Main thread operation timed out' messages from the MCP menu call that waited on this build. They are Editor log errors raised while the build ran, not build steps. Result: Succeeded. The one warning is the known pipeline config warning (no RuntimePipelineConfig).
+--- Output files (bytes, relative to Builds/WebGL):
+6436823 Build/WebGL.data
+441211 Build/WebGL.framework.js
+26982 Build/WebGL.loader.js
+33356660 Build/WebGL.wasm
+4066 index.html

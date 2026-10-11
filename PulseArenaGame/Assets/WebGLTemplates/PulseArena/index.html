@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#121f29">
+    <title>{{{ PRODUCT_NAME }}}</title>
+    <style>
+      /* The canvas fills the browser window on phones and desktops. Unity keeps its render target at the canvas size
+         (matchWebGLToCanvasSize is on by default), so these rules are the whole sizing. */
+      html, body {
+        height: 100%;
+        margin: 0;
+        overflow: hidden;
+        background: #121f29;
+        overscroll-behavior: none;
+      }
+      #unity-container {
+        position: fixed;
+        inset: 0;
+        touch-action: none;
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        user-select: none;
+      }
+      #unity-canvas {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        display: block;
+        outline: none;
+        touch-action: none;
+      }
+      #unity-loading {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 16px;
+        padding: 16px;
+        box-sizing: border-box;
+        background: #121f29;
+        color: #d8e6ee;
+        font: 16px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif;
+        text-align: center;
+      }
+      #unity-loading[hidden] {
+        display: none;
+      }
+      #unity-progress {
+        width: min(60vw, 280px);
+        height: 6px;
+        border-radius: 3px;
+        background: #2b3f4b;
+        overflow: hidden;
+      }
+      #unity-progress-bar {
+        width: 0;
+        height: 100%;
+        background: #5fd3c2;
+        transition: width 0.1s linear;
+      }
+      #unity-message {
+        max-width: 90vw;
+        color: #ffb4a8;
+        overflow-wrap: anywhere;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="unity-container">
+      <canvas id="unity-canvas" width={{{ WIDTH }}} height={{{ HEIGHT }}} tabindex="-1"></canvas>
+      <div id="unity-loading">
+        <div>{{{ PRODUCT_NAME }}}</div>
+        <div id="unity-progress"><div id="unity-progress-bar"></div></div>
+        <div id="unity-message"></div>
+      </div>
+    </div>
+    <script>
+      var canvas = document.querySelector("#unity-canvas");
+      var loading = document.querySelector("#unity-loading");
+      var progressBar = document.querySelector("#unity-progress-bar");
+      var message = document.querySelector("#unity-message");
+
+      function fail(text) {
+        message.textContent = "Could not start the game: " + text;
+        loading.hidden = false;
+      }
+
+      var config = {
+        dataUrl: "Build/{{{ DATA_FILENAME }}}",
+        frameworkUrl: "Build/{{{ FRAMEWORK_FILENAME }}}",
+        codeUrl: "Build/{{{ CODE_FILENAME }}}",
+        streamingAssetsUrl: "StreamingAssets",
+        companyName: {{{ JSON.stringify(COMPANY_NAME) }}},
+        productName: {{{ JSON.stringify(PRODUCT_NAME) }}},
+        productVersion: {{{ JSON.stringify(PRODUCT_VERSION) }}},
+      };
+
+      // Phones render at one device pixel per CSS pixel, the same choice as Unity's Default template, to keep the frame
+      // rate up. Desktop browsers keep their pixel ratio so text stays sharp. Not measured on a phone (T7 is blocked).
+      if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+        config.devicePixelRatio = 1;
+      }
+
+      var loader = document.createElement("script");
+      loader.src = "Build/{{{ LOADER_FILENAME }}}";
+      loader.onerror = function () {
+        fail("the loader file did not load.");
+      };
+      loader.onload = function () {
+        createUnityInstance(canvas, config, function (progress) {
+          progressBar.style.width = (100 * progress) + "%";
+        }).then(function () {
+          loading.hidden = true;
+        }).catch(function (error) {
+          fail(error && error.message ? error.message : String(error));
+        });
+      };
+      document.body.appendChild(loader);
+    </script>
+  </body>
+</html>

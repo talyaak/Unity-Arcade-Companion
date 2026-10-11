@@ -1,0 +1,123 @@
+[log.warning] <meta name="apple-mobile-web-app-capable" content="yes"> is deprecated. Please include <meta name="mobile-web-app-capable" content="yes"> http://127.0.0.1:8765/
+[log.error] Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:8765/favicon.ico
+[console.log] [UnityCache] 'http://127.0.0.1:8765/Build/WebGL.data' successfully downloaded and stored in the browser cache
+[console.log] [UnityMemory] Configuration Parameters - Can be set up in boot.config
+
+[console.log]     "memorysetup-bucket-allocator-granularity=16"
+
+[console.log]     "memorysetup-bucket-allocator-bucket-count=8"
+
+[console.log]     "memorysetup-bucket-allocator-block-size=4194304"
+
+[console.log]     "memorysetup-bucket-allocator-block-count=1"
+
+[console.log]     "memorysetup-main-allocator-block-size=16777216"
+
+[console.log]     "memorysetup-thread-allocator-block-size=16777216"
+
+[console.log]     "memorysetup-gfx-main-allocator-block-size=16777216"
+
+[console.log]     "memorysetup-gfx-thread-allocator-block-size=16777216"
+
+[console.log]     "memorysetup-cache-allocator-block-size=4194304"
+
+[console.log]     "memorysetup-typetree-allocator-block-size=2097152"
+
+[console.log]     "memorysetup-profiler-bucket-allocator-granularity=16"
+
+[console.log]     "memorysetup-profiler-bucket-allocator-bucket-count=8"
+
+[console.log]     "memorysetup-profiler-bucket-allocator-block-size=4194304"
+
+[console.log]     "memorysetup-profiler-bucket-allocator-block-count=1"
+
+[console.log]     "memorysetup-profiler-allocator-block-size=16777216"
+
+[console.log]     "memorysetup-profiler-editor-allocator-block-size=1048576"
+
+[console.log]     "memorysetup-temp-allocator-size-main=4194304"
+
+[console.log]     "memorysetup-job-temp-allocator-block-size=2097152"
+
+[console.log]     "memorysetup-job-temp-allocator-block-size-background=1048576"
+
+[console.log]     "memorysetup-job-temp-allocator-reduction-small-platforms=262144"
+
+[console.log]     "memorysetup-allocator-temp-initial-block-size-main=262144"
+
+[console.log]     "memorysetup-allocator-temp-initial-block-size-worker=262144"
+
+[console.log]     "memorysetup-temp-allocator-size-audio-worker=65536"
+
+[console.log]     "memorysetup-temp-allocator-size-background-worker=32768"
+
+[console.log] CodeReloadManager initialized
+
+[console.log] Input System module state changed to: Initialized.
+
+[console.log] [Physics::Module] Initialized fallback backend.
+
+[console.log] [Physics::Module] Id: 0xdecafbad
+
+[console.log] Loading player data from data.unity3d
+
+[console.log] Initialize engine version: 6000.4.0f1 (8cf496087c8f)
+
+[console.log] Creating WebGL 2.0 context.
+[console.log] Renderer: WebKit WebGL
+
+[console.log] Vendor:   WebKit
+
+[console.log] Version:  OpenGL ES 3.0 (WebGL 2.0 (OpenGL ES 3.0 Chromium))
+
+[console.log] GLES:     3
+
+[console.log]  EXT_clip_control EXT_color_buffer_float EXT_color_buffer_half_float EXT_conservative_depth EXT_depth_clamp EXT_disjoint_timer_query_webgl2 EXT_float_blend EXT_polygon_offset_clamp EXT_texture_compression_bptc EXT_texture_compression_rgtc EXT_texture_filter_anisotropic EXT_texture_mirror_clamp_to_edge NV_shader_noperspective_interpolation OES_draw_buffers_indexed OES_sample_variables OES_shader_multisample_interpolation OES_texture_float_linear OVR_multiview2 WEBGL_clip_cull_distance WEBGL_compressed_texture_astc WEBGL_compressed_texture_etc WEBGL_compressed_texture_etc1 WEBGL_compressed_texture_s3tc WEBGL_compressed_texture_s3tc_srgb WEBGL_debug_renderer_info WEBGL_debug_shaders WEBGL_lose_context WEBGL_multi_draw WEBGL_polygon_mode WEBGL_stencil_texturing GL_EXT_clip_control GL_EXT_color_buffer_float GL_EXT_color_buffer_half_float GL_EXT_conservative_depth GL_EXT_depth_clamp GL_EXT_disjoint_timer_query_webgl2 GL_EXT_float_blend GL_EXT_polygon_offset_clamp GL_EXT_texture_compression_bptc GL_EXT_texture_comp
+
+[console.log] ression_rgtc GL_EXT_texture_filter_anisotropic GL_EXT_texture_mirror_clamp_to_edge GL_NV_shader_noperspective_interpolation GL_OES_draw_buffers_indexed GL_OES_sample_variables GL_OES_shader_multisample_interpolation GL_OES_texture_float_linear GL_OVR_multiview2 GL_WEBGL_clip_cull_distance GL_WEBGL_compressed_texture_astc GL_WEBGL_compressed_texture_etc GL_WEBGL_compressed_texture_etc1 GL_WEBGL_compressed_texture_s3tc GL_WEBGL_compressed_texture_s3tc_srgb GL_WEBGL_debug_renderer_info GL_WEBGL_debug_shaders GL_WEBGL_lose_context GL_WEBGL_multi_draw GL_WEBGL_polygon_mode GL_WEBGL_stencil_texturing
+
+[console.log] OPENGL LOG: Creating OpenGL ES 3.0 graphics device ; Context level  <OpenGL ES 3.0> ; Context handle 1
+
+[console.log] [Physics::Module] Selected backend.
+
+[console.log] [Physics::Module] Name: PhysX
+
+[console.log] [Physics::Module] Id: 0xf2b8ea05
+
+[console.log] [Physics::Module] SDK Version: 4.1.2
+
+[console.log] [Physics::Module] Integration Version: 1.0.0
+
+[console.log] [Physics::Module] Threading Mode: Single-Threaded
+
+[console.log] Input Manager initialize...
+
+[console.log] Input System initialize...
+
+[console.log] UnloadTime: 0.899999 ms
+
+[log.warning] The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page.  http://127.0.0.1:8765/Build/WebGL.framework.js
+[log.warning] The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page.  http://127.0.0.1:8765/Build/WebGL.framework.js
+[log.warning] The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page.  http://127.0.0.1:8765/Build/WebGL.framework.js
+[log.warning] The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page.  http://127.0.0.1:8765/Build/WebGL.framework.js
+[log.warning] The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page.  http://127.0.0.1:8765/Build/WebGL.framework.js
+[log.warning] The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page.  http://127.0.0.1:8765/Build/WebGL.framework.js
+[log.warning] The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page.  http://127.0.0.1:8765/Build/WebGL.framework.js
+[log.warning] The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page.  http://127.0.0.1:8765/Build/WebGL.framework.js
+[log.warning] The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page.  http://127.0.0.1:8765/Build/WebGL.framework.js
+[log.warning] The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page.  http://127.0.0.1:8765/Build/WebGL.framework.js
+[log.warning] The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page.  http://127.0.0.1:8765/Build/WebGL.framework.js
+[log.warning] The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page.  http://127.0.0.1:8765/Build/WebGL.framework.js
+[log.warning] The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page.  http://127.0.0.1:8765/Build/WebGL.framework.js
+[log.warning] The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page.  http://127.0.0.1:8765/Build/WebGL.framework.js
+[log.warning] The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page.  http://127.0.0.1:8765/Build/WebGL.framework.js
+[log.warning] The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page.  http://127.0.0.1:8765/Build/WebGL.framework.js
+[log.warning] The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page.  http://127.0.0.1:8765/Build/WebGL.framework.js
+[log.warning] The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page.  http://127.0.0.1:8765/Build/WebGL.framework.js
+[log.warning] The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page.  http://127.0.0.1:8765/Build/WebGL.framework.js
+[log.warning] The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page.  http://127.0.0.1:8765/Build/WebGL.framework.js
+[log.warning] The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page.  http://127.0.0.1:8765/Build/WebGL.framework.js
+[log.warning] The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page.  http://127.0.0.1:8765/Build/WebGL.framework.js
+[log.warning] The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page.  http://127.0.0.1:8765/Build/WebGL.framework.js
+[log.warning] The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page.  http://127.0.0.1:8765/Build/WebGL.framework.js
+[console.log] Audio context resumed after 10.772 seconds.

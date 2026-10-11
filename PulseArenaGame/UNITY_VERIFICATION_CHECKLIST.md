@@ -213,3 +213,15 @@ Scene `Assets/PulseArena/Scenes/Physics.unity` (Pulse Arena > Build Physics Scen
 - [ ] GC result window: the first frame after a result was 2.0 to 3.2 KB in this set, but 9.1 KB (win) and 5.2 KB (loss) in an earlier probe set of the same game code. D12 clarification 2 allows 4 KB. Open for the architect
 - [ ] Frame time, Android, Play Mode and the pressed button look: not verified (as in round 1)
 - [ ] The heap judgement, and whether the dense check is the truth test: the architect decides
+
+## WebGL build and phone link (T13; D18 Stage 0; evidence in `docs/evidence/T13/`)
+- [x] Build method `PulseArenaBuild.BuildWebGL` (menu `Pulse Arena > Build WebGL`; global namespace, so the `-executeMethod` name is as D18 says). Explicit scene list Match, then Challenge (D18 item 3); Build Settings unchanged
+- [x] WebGL build Succeeded (Unity 6000.4.0f1, Editor open). The summary counts 2 errors, which are two MCP timeout messages logged during the build, not build steps; 1 warning, the known pipeline config warning. Log and sizes in `build-log.txt`
+- [x] Headless Edge, phone-sized emulation (390x844, Android user agent, touch emulation), local and through the tunnel: loads, 0 exceptions, first screen is Match, emulated taps move tiles to the tray (`local-check/`, `tunnel-check-run/`)
+- [x] Through the Cloudflare tunnel: index, loader, framework, data and wasm return 200 with the disk byte counts (`tunnel-check.txt`, host redacted)
+- [x] ntfy message sent by `tools/ship-webgl.mjs` (the shared helper; the topic is not written in the repo)
+- [ ] The user opens the link on a phone, the match game loads, and taps work there (the user confirms)
+- [ ] Touch feel, frame time, GC and battery on a phone browser. Not T7 evidence (D18 item 5)
+- [ ] Android (T7, blocked: no device, no installs)
+- [ ] Batch `-executeMethod` with the Editor closed (the Editor was open, so the project lock blocks it)
+- [ ] Console: a 404 for `/favicon.ico` and the deprecated `apple-mobile-web-app-capable` meta. Cosmetic; fix with the next template change

@@ -1,0 +1,31 @@
+{
+  "url": "http://127.0.0.1:8765/",
+  "viewport": "390x844 CSS px, deviceScaleFactor 1, mobile emulation, Android user agent, touch emulation on",
+  "loadState": {
+    "hidden": true,
+    "message": "",
+    "progress": "100%"
+  },
+  "loadedAtEpochMs": 1791716333233,
+  "taps": [
+    [
+      195,
+      500
+    ],
+    [
+      100,
+      620
+    ],
+    [
+      290,
+      620
+    ],
+    [
+      195,
+      740
+    ]
+  ],
+  "screenChangedAfterTaps": false,
+  "exceptionCount": 0,
+  "errorLineCount": 1
+}

@@ -1,0 +1,31 @@
+{
+  "url": "https://<tunnel-host>/",
+  "viewport": "390x844 CSS px, deviceScaleFactor 1, mobile emulation, Android user agent, touch emulation on",
+  "loadState": {
+    "hidden": true,
+    "message": "",
+    "progress": "100%"
+  },
+  "loadedAtEpochMs": 1791716466417,
+  "taps": [
+    [
+      145,
+      445
+    ],
+    [
+      195,
+      440
+    ],
+    [
+      243,
+      436
+    ],
+    [
+      145,
+      395
+    ]
+  ],
+  "screenChangedAfterTaps": true,
+  "exceptionCount": 0,
+  "errorLineCount": 1
+}

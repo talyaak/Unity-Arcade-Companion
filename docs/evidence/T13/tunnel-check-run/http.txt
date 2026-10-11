@@ -1,0 +1,6 @@
+200 text/html https://<tunnel-host>/
+200 application/javascript https://<tunnel-host>/Build/WebGL.loader.js
+200 application/octet-stream https://<tunnel-host>/Build/WebGL.data
+200 application/javascript https://<tunnel-host>/Build/WebGL.framework.js
+200 application/wasm https://<tunnel-host>/Build/WebGL.wasm
+404 text/plain https://<tunnel-host>/favicon.ico
