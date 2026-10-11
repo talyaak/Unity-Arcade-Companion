@@ -3,6 +3,10 @@
 **Current MVP direction: an original triple-match game (3D tiles, tray, triple clears).** See `docs/MATCH_MVP.md`.
 The earlier one-tap challenge game is kept as a prototype, with its own scene and tests.
 
+![Match MVP in portrait: a triple has just cleared, with the board, the HUD bars and the tray](docs/images/match-portrait.png)
+
+*Match MVP in portrait (9:16): a development build in Unity 6000.4.0f1.*
+
 ## Match MVP (new)
 
 | Area | Status |
