@@ -166,7 +166,17 @@ Captures for every step are at 576 x 1024 (9:16) and 1920 x 1080 (16:9), in `doc
 - [x] Buttons: a darker lower border, which shrinks when pressed (USS :active). The code and the USS are in place; the pressed look is not in a capture
 - [x] No timers, stars, lives, coins, shop or boosters
 - [x] Build: Unity recompile 0 errors; GameCompile 0 errors; Development standalone build 0 errors; player log 0 exception lines
-- [ ] Result card (Level cleared or Tray full, with Next stage and Retry) in a capture: step d (Editor check)
-- [ ] GC with the new meshes and HUD (D12 limits): step d
-- [ ] Material count flat across taps (D3 as amended by D13): step d
-- [ ] Covered tile against free tile, clearly different (architect's watch item): step d
+- [x] Result card (Tray full, with Retry and no Next stage) in a capture: step d, both aspects
+- [x] GC with the new meshes and HUD (D12 limits): step d
+- [x] Material count flat across taps (D3 as amended by D13): step d
+- [x] Covered tile against free tile, clearly different (architect's watch item): step d
+
+### Step d: checks and the Cleared fix (`docs/evidence/T10/d-verify/`, `notes.txt`, `gc-analysis.txt`)
+- [x] Cleared bar: reads Core's TilesCleared (3 / 54 after a triple, tray 0); a new level refreshes every HUD value (it kept a stale total). Seen in the standalone captures and results
+- [x] Material count: 44 at the start, after 3 taps and after 9 taps (`FindObjectsOfTypeAll<Material>`, player)
+- [x] Covered against free: the same colour gives a luminance ratio of 0.45 (the dim factor), on the slab (top and sides) and the emblem (`t10d-sample-portrait.txt`). The later sample pair had different colours and is kept for transparency (`t10d-sample-final.txt`)
+- [x] Result card: Tray full, with Retry shown and Next stage hidden, "Cleared 0 / 54", seven warm slots. Captures in both aspects (`t10d-lost5b-*.png`)
+- [ ] Pressed button look: not captured. The :active rule is in `MatchHud.uss`; a still frame needs a press held during the capture
+- [x] GC (`-probe-gc`, 8,999 frames): D12 limits met. Board taps max 5,724 B (limit 16 KB); level start max 41,986 B (limit 50 KB); no frame over 50 KB after the 300-frame warm-up. Steady frames median and p90 0 B
+- [ ] Watch item for the architect: the result-card slide allocates for about 18 frames after a win or loss (up to 2 KB a frame; 44.6 KB over the run). It is event work, but the D12 wording says 0 B on frames with no tap
+- [x] Player log: 0 exception lines in every run

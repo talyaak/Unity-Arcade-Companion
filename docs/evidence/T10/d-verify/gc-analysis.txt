@@ -1,0 +1,14 @@
+GC analysis, -probe-gc, standalone Development build (T10 step d, 2026-10-11)
+
+Source: gc-frames.csv (columns: frame, dtMs, gcBytesOfFrame, flags). Rows: 8,999. Warm-up: the first 300 rows are excluded
+from the limits (startup and the first draws). Warm-up maximum (startup, expected): 4,814,947 B.
+Flags (from the T3 probe): 1 tap, 2 stage start, 4 win or loss, 8 tile check, 16 cleared, 32 moved.
+
+Steady frames (flags 0, and no tap in the frame before): n = 8,138. Median 0 B, p90 0 B, max 2,032 B.
+  57 of the 8,138 allocate, 44,592 B in total. 56 of those 57 fall within 25 frames after a win or loss (the result card
+  slide, 0.3 s of UI Toolkit style updates). The other one is 1,312 B.
+Board tap frames (flag 1, not a level start; moves, clears, wins and losses): n = 276. Median 2,540 B, p90 4,846 B,
+  max 5,724 B. Limit 16 KB: met (0 frames over).
+Frame after a tap: n = 276. Median 80 B, p90 222 B, max 1,898 B.
+Level-start frames (flag 2; Retry and Next stage): n = 9. Median 33,006 B, p90 41,784 B, max 41,986 B. Limit 50 KB: met.
+Frames over 50 KB after warm-up: 0.

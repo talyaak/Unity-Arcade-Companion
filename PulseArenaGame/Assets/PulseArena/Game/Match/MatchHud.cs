@@ -198,15 +198,22 @@ namespace PulseArena.Game
             MatchBoard board = _match.Board;
             if (board != _shownBoard)
             {
+                // A new level (Retry, Next stage, or the first one): its total can differ even when the values match,
+                // so every value is written again.
                 _shownBoard = board;
                 _totalTiles = board.TotalTiles;
+                _shownStage = -1;
+                _shownScore = -1;
+                _shownCombo = -1;
+                _shownCleared = -1;
+                _shownTray = -1;
             }
 
             int stage = _match.StageNumber;
             int score = board.Score;
             int combo = board.Combo;
             int tray = board.Tray.Count;
-            int cleared = _totalTiles - board.RemainingOnBoard;
+            int cleared = board.TilesCleared;   // Core's count of tiles that left through a triple (tiles in the tray are not cleared)
 
             if (stage != _shownStage)
             {

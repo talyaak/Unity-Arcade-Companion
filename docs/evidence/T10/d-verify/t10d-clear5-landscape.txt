@@ -1,0 +1,14 @@
+level=stage5
+mode=clear
+materialsBefore=44
+chosenSymbol=2
+state=Playing tray=0 tilesCleared=3 score=100 combo=1 remainingOnBoard=51 totalTiles=54 taps=3
+materialsAfter=44
+hudStage=5
+hudScore=100
+hudCleared=3 / 54
+hudBanner=
+hudDetail=
+hudRetryDisplay=None
+hudNextDisplay=None
+screenshot=t10d-clear5-landscape.png
