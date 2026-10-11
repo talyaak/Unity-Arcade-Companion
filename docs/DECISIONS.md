@@ -169,3 +169,16 @@ Bands are the new measured value plus or minus 8 points, as in D7. The Core band
 - **Result-window GC:** frames after a win or loss measured 2.0 to 3.2 KB in the final set but 9.1 KB (win) and 5.2 KB (loss) in an earlier set, over the 4 KB allowance of D12 clarification 2. Accepted for the prototype only. Before physics mode could ship, the cause must be traced and the frame must meet 4 KB, or D12 is revised with evidence.
 - **Settle allocations** (stage 2: about 10 to 13 KB over 17 to 21 frames): Core's `ReportFreeTiles` now reuses one set instead of building a new one on every report (116 of 116 tests pass). The builder re-measures to see how much that explains.
 - **Outcomes:** 1 win and 6 losses on stage 2 in 7 runs is not a sample and no win rate is claimed. The same policy gave a different result at two aspect ratios, probably because the probe taps every 4 frames; not tested. Physics mode is not repeatable across frame rates, which is part of why it has no replay check.
+
+
+## D17: Screens, win display and settings scope. Status: PROPOSED, awaiting the user's approval (2026-10-11)
+
+Source: the builder's scope page (https://claude.ai/artifact/GfBvddZgsSeXaJoYumpCyL): title, stage select, pause, stage win, campaign complete, settings, how to play, about; saved progress; Build Settings gets the title and stage-select scenes. Architect check against the rules: no money, coins, shop, lives, timers, stars, boosters or lock icons (D4, D13); original art (D8 as amended); UI Toolkit (D6); 53 triples across five stages is right (4+7+10+14+18); mock scores are labelled examples; confetti stays within D9; physics stays out of the player menu (D14, D16). No hard-rule problem found.
+Rulings and conditions, which apply once the user approves:
+1. **Unlock and best-score rules live in Core, with tests, by the architect.** A `MatchProgress` class: which stages are open (stage 1 always; stage n opens when n-1 is won), best score per stage, a new-best flag on a win, run totals for the campaign screen, Reset, and a versioned string form for saving. No UnityEngine. Game stores the string in the existing key-value store and shows what Core says.
+2. **Pause must stop the match clock.** The combo window runs on the time Game passes to Core, so a pause and an app-focus loss must freeze that time (and the physics, if ever shown). The builder shows evidence: combo does not expire during a pause.
+3. **Haptics:** device only and unverifiable without T7. Recommend leaving it out of phase 3 until a device run exists; the Sound toggle controls the audio hooks, which are silent placeholders today, so it must say nothing misleading. The user decides.
+4. **Challenge:** stays reachable from the title unchanged. It still uses OnGUI, so Active Input Handling stays on Both (D2) until it is ported or removed.
+5. **Build Settings:** adding scenes needs the user's explicit approval, as the page says.
+6. **Frame budgets:** scene loads count as level starts (50 KB). The 4 KB result-window rule (D12 clarification 2) applies to the new win display and must be measured in phase 2, as the page plans.
+7. Stage sizes and D7/D15 bands do not change. Stage 5 wins about three in four careful games, so the campaign-complete screen will be reached rarely; do not tune stage 5 for that without a playtest.
