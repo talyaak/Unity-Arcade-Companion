@@ -125,14 +125,15 @@ Game view only advances while the Editor is the active window; `Application.runI
 ## Human playtest (T9; needs the user)
 - [x] Standalone release build of the Match scene: `PulseArenaGame/Builds/T9-Playtest/PulseArenaGame.exe` (git-ignored; Build Settings unchanged). Smoke-tested by the builder (12 s run): starts, responds, no exceptions in the log
 - [x] Player note for the playtester: `docs/playtests/T9-player-note.md`
-- [ ] Human playtest of stages 1 to 5, written up in `docs/playtests/2026-10-11-human.md`. **Partial:** stages 1 to 4 reported by the user; stage 5 not played; the items below
-- [x] Stages 1 to 4 played by one person (reported by the user, "I think" all four; not observed by the builder)
-- [ ] Time to clear for each stage, or the loss and tries. **Not reported.** No loss seen in stages 1 to 4 (reported)
-- [ ] Stage 1: rules understood without reading anything. **Not answered**
+- [ ] Human playtest of stages 1 to 5, written up in `docs/playtests/2026-10-11-human.md`. **Review requested:** every question answered except stage 5 (not played) and the build copy (not confirmed)
+- [x] Stages 1 to 4 played by one person (reported by the user; not observed by the builder)
+- [ ] Time to clear for each stage. **Partly:** one range reported, "about 10 seconds, maybe 15 in the hardest", not per stage. It is the player's clock, not game seconds
+- [x] Stage 1: rules understood without reading anything (reported: "everything made sense")
 - [x] No unexpected tap (reported: "every tap had an expected output")
-- [ ] Motion feel: moves, shake, red flash, "+points" popup, confetti. **Not answered**
-- [ ] Score, tray count and popup readable. **Not answered** (the player called the score and UI "very basic")
+- [x] Motion felt about right (reported: "no, they felt about right")
+- [x] Score, tray count and popup readable (reported: "yes I could"). The score and UI were called "very basic": a polish item, T10
 - [x] Reduce motion button found; it made the game less shaky (reported)
 - [x] Nothing broke or froze, as of the report (reported)
-- [ ] Stage 5 played. **Not played:** the player stopped before it ("looked like a lot") and said this is not meant as a comment
-- [ ] Windows version, screen size, and a screenshot or video. **Not given**
+- [x] Windows 11 Pro, 27-inch at 1920 x 1080 (reported). No screenshot from the player; the builder's captures are in `docs/evidence/T9/`
+- [ ] Stage 5 played. **Not verified:** not played; the player stopped before it ("looked like a lot") and said this is not meant as a comment
+- [ ] Build copy confirmed as the T9 release build. **Not confirmed**
