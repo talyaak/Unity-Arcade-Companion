@@ -176,6 +176,19 @@ namespace UnityEngine
 
         public float magnitude => (float)System.Math.Sqrt(x * x + y * y + z * z);
 
+        public static Vector3 up => new Vector3(0f, 1f, 0f);
+        public static Vector3 down => new Vector3(0f, -1f, 0f);
+
+        public static float Dot(Vector3 a, Vector3 b)
+        {
+            return a.x * b.x + a.y * b.y + a.z * b.z;
+        }
+
+        public static Vector3 Cross(Vector3 a, Vector3 b)
+        {
+            return new Vector3(a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x);
+        }
+
         public static Vector3 operator +(Vector3 a, Vector3 b)
         {
             return new Vector3(a.x + b.x, a.y + b.y, a.z + b.z);
@@ -214,6 +227,36 @@ namespace UnityEngine
         public Collider collider;
     }
 
+    public class Mesh : Object
+    {
+        public Vector3[] vertices;
+        public Vector3[] normals;
+        public int subMeshCount;
+
+        public void SetTriangles(int[] triangles, int submesh)
+        {
+        }
+
+        public void RecalculateBounds()
+        {
+        }
+    }
+
+    public class MeshFilter : Component
+    {
+        public Mesh sharedMesh;
+    }
+
+    public class MeshRenderer : Renderer
+    {
+    }
+
+    public class BoxCollider : Collider
+    {
+        public Vector3 center;
+        public Vector3 size;
+    }
+
     public class Collider : Component
     {
     }
@@ -221,6 +264,7 @@ namespace UnityEngine
     public class Renderer : Component
     {
         public Material material = new Material();
+        public Material[] sharedMaterials;
         public Material sharedMaterial;
     }
 
@@ -243,6 +287,10 @@ namespace UnityEngine
         public bool HasProperty(string name)
         {
             return false;
+        }
+
+        public void SetFloat(string name, float value)
+        {
         }
 
         public void SetColor(string name, Color value)
@@ -337,6 +385,16 @@ namespace UnityEngine
         public static float Clamp01(float value)
         {
             return value < 0f ? 0f : value > 1f ? 1f : value;
+        }
+
+        public static float Cos(float value)
+        {
+            return (float)System.Math.Cos(value);
+        }
+
+        public static float Sqrt(float value)
+        {
+            return (float)System.Math.Sqrt(value);
         }
 
         public static float Sin(float value)

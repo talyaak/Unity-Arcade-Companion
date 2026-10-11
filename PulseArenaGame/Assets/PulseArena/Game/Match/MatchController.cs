@@ -11,16 +11,20 @@ namespace PulseArena.Game
     public sealed class MatchController : MonoBehaviour
     {
         private const float CellSpacing = 1.15f;
-        private const float TileHeight = 0.95f;
-        private const float TraySpacing = 1.5f;      // wider than the board pitch: the tops of tall primitives look about 1.6x wider from the camera
+        private const float TileHeight = 0.6f;       // stack spacing: a slab is 0.6 units thick (0.54 at TileScale), so the layers read as separate tiles
+        private const float TraySpacing = 1.05f;     // tray pitch: the tray is the widest row in portrait, so it sets the framing width (T10)
         private const float TrayY = 0.5f;
         private const float TrayZ = -4.6f;
         private const float MaxFrameSeconds = 0.1f;
         private const float DimmedBrightness = 0.45f;
         private const float TileScale = 0.9f;         // tile footprint in units (ASSET_PIPELINE section 3)
         private const float TileRadius = TileScale * 0.5f;
-        private const float TileHalfHeight = TileScale; // cylinders and capsules are 2 units tall at scale 1
-        private const float PopupHeadroom = 1f;       // room above the stacks for the world-space "+points" popup (D6)
+        private const float TileHalfHeight = TileScale * 0.36f; // the slab's top and the emblem's top, 0.36 units above centre
+        private const float SlabThickness = 0.6f;    // TileMeshes: a slab is 0.6 units thick
+        private const float PlateMargin = 0.3f;      // the board plate and the tray well reach this far past their slots
+        private const float PlateThickness = 0.2f;
+        private const float WellThickness = 0.2f;
+        private const float HeadroomFraction = 0.2f;  // room above the tallest stack, as a fraction of that stack's height (T10 framing)
         private const float FramingMargin = 1.10f;    // margin around the content, set by the architect (2026-10-11)
 
         // Juice standard timings (GAME_DESIGN, Motion). Presentation only: none of these change Core's clock.
@@ -33,6 +37,18 @@ namespace PulseArena.Game
         private const float ConfettiWaveSeconds = 0.35f;
 
         private static readonly (int, bool) RedKey = (-1, false);
+        private static readonly (int, bool) RedEmblemKey = (-3, false);
+        private static readonly (int, bool) PlateKey = (-4, false);
+        private static readonly (int, bool) WellKey = (-5, false);
+
+        private const float BodyGloss = 0.45f;       // Standard shader smoothness: a soft sheen on the slabs
+        private const float EmblemGloss = 0.55f;
+        private const float PlateGloss = 0.2f;
+        private const float WellGloss = 0.1f;
+
+        private static readonly Color EmblemColor = new Color(0.10f, 0.12f, 0.16f, 1f);   // dark ink: readable on every symbol colour
+        private static readonly Color PlateColor = new Color(0.13f, 0.19f, 0.25f, 1f);
+        private static readonly Color WellColor = new Color(0.05f, 0.08f, 0.11f, 1f);
 
         // Original palette and shapes for this game. Symbols beyond these lists cycle through them.
         private static readonly Color[] Palette =
@@ -46,14 +62,6 @@ namespace PulseArena.Game
             new Color(0.95f, 0.55f, 0.75f, 1f)
         };
 
-        private static readonly PrimitiveType[] Shapes =
-        {
-            PrimitiveType.Cube,
-            PrimitiveType.Sphere,
-            PrimitiveType.Cylinder,
-            PrimitiveType.Capsule
-        };
-
         [SerializeField] private int _stageIndex;
 
         /// Base material for tiles, created by Pulse Arena > Build Match Scene. Colour variants are copies of it.
@@ -63,6 +71,12 @@ namespace PulseArena.Game
         private readonly Dictionary<int, TileView> _views = new Dictionary<int, TileView>();
         private readonly Dictionary<(int, bool), Material> _materials = new Dictionary<(int, bool), Material>();
         private readonly List<Vector3> _fitPoints = new List<Vector3>();
+        private Mesh[] _tileMeshes;                  // one per emblem shape, built once in Start
+        private Mesh _slabMesh;
+        private GameObject _boardPlate;
+        private GameObject _trayWell;
+        private Vector3 _plateHalf;
+        private Vector3 _wellHalf;
         private MatchLevelSpec _spec;
         private MatchBoard _board;
         private double _clock;
@@ -136,6 +150,15 @@ namespace PulseArena.Game
             }
 
             _ = RedMaterial;
+            _ = RedEmblemMaterial;
+            _ = EmblemMaterial(dimmed: false);
+            _ = EmblemMaterial(dimmed: true);
+
+            // The tile meshes and the scenery are built once, here. A level start only moves and resizes them.
+            _tileMeshes = TileMeshes.CreateTiles();
+            _slabMesh = TileMeshes.CreateSlab();
+            _boardPlate = CreateSlab("Board plate", ColorMaterial(PlateKey, PlateColor, PlateGloss));
+            _trayWell = CreateSlab("Tray well", ColorMaterial(WellKey, WellColor, WellGloss));
             StartLevel(_stageIndex, (ulong)DateTime.UtcNow.Ticks);
         }
 
@@ -161,6 +184,7 @@ namespace PulseArena.Game
             }
 
             _maxStack = MaxStackHeight(level.Tiles);
+            LayoutPlates();
             BuildFitPoints(level.Tiles);
             LayoutBoard();
             RefreshTints();
@@ -200,7 +224,7 @@ namespace PulseArena.Game
                     blocked.Shake();
                 }
 
-                blocked.Flash(RedMaterial, BlockedFlashSeconds);
+                blocked.Flash(RedMaterial, RedEmblemMaterial, BlockedFlashSeconds);
                 AudioCues.Play(AudioCue.Blocked);
             }
 
@@ -262,7 +286,7 @@ namespace PulseArena.Game
                 {
                     if (_views.TryGetValue(inTray.Id, out TileView lost))
                     {
-                        lost.Flash(RedMaterial, LossFlashSeconds);
+                        lost.Flash(RedMaterial, RedEmblemMaterial, LossFlashSeconds);
                         lost.Drop(LossFlashSeconds);
                     }
                 }
@@ -440,7 +464,10 @@ namespace PulseArena.Game
                 AddBox(TraySlot(i));
             }
 
-            _fitPoints.Add(new Vector3(0f, _maxStack * TileHeight + TileHalfHeight + PopupHeadroom, 0f));
+            AddExtents(new Vector3(0f, -PlateThickness * 0.5f, 0f), _plateHalf);
+            AddExtents(new Vector3(0f, WellThickness * 0.5f, TrayZ), _wellHalf);
+            float stackTop = _maxStack * TileHeight + TileHalfHeight;
+            _fitPoints.Add(new Vector3(0f, stackTop * (1f + HeadroomFraction), 0f));
         }
 
         private void AddBox(Vector3 center)
@@ -451,6 +478,18 @@ namespace PulseArena.Game
                     center.x + ((i & 1) == 0 ? -TileRadius : TileRadius),
                     center.y + ((i & 2) == 0 ? -TileHalfHeight : TileHalfHeight),
                     center.z + ((i & 4) == 0 ? -TileRadius : TileRadius)));
+            }
+        }
+
+        // The eight corners of a box with the given half sizes, for the framing. The plate and the well use it.
+        private void AddExtents(Vector3 centre, Vector3 half)
+        {
+            for (int i = 0; i < 8; i++)
+            {
+                _fitPoints.Add(new Vector3(
+                    centre.x + ((i & 1) == 0 ? -half.x : half.x),
+                    centre.y + ((i & 2) == 0 ? -half.y : half.y),
+                    centre.z + ((i & 4) == 0 ? -half.z : half.z)));
             }
         }
 
@@ -483,16 +522,37 @@ namespace PulseArena.Game
             }
 
             _materials.Clear();
+
+            if (_tileMeshes != null)
+            {
+                foreach (Mesh mesh in _tileMeshes)
+                {
+                    Destroy(mesh);
+                }
+            }
+
+            if (_slabMesh != null)
+            {
+                Destroy(_slabMesh);
+            }
         }
 
         private void CreateView(MatchTile tile)
         {
-            GameObject go = GameObject.CreatePrimitive(Shapes[tile.Symbol % Shapes.Length]);
-            go.name = "Tile " + tile.Id;
+            var go = new GameObject("Tile " + tile.Id);
             go.transform.localScale = new Vector3(TileScale, TileScale, TileScale);
+            go.AddComponent<MeshFilter>().sharedMesh = _tileMeshes[tile.Symbol % _tileMeshes.Length];
+            go.AddComponent<MeshRenderer>();
+
+            // The collider sits on the tile itself, so a tap's hit finds the TileView. It covers the slab and the emblem:
+            // 0.66 units tall, from -0.3 to 0.36 about the centre.
+            var box = go.AddComponent<BoxCollider>();
+            box.center = new Vector3(0f, 0.03f, 0f);
+            box.size = new Vector3(1f, 0.66f, 1f);
+
             TileView view = go.AddComponent<TileView>();
             view.Init(tile.Id, BoardPosition(tile.X, tile.Y, 0));
-            view.SetMaterial(MaterialFor(tile.Symbol, dimmed: false));
+            view.SetMaterials(MaterialFor(tile.Symbol, dimmed: false), EmblemMaterial(dimmed: false));
             _views.Add(tile.Id, view);
         }
 
@@ -554,12 +614,28 @@ namespace PulseArena.Game
                     continue;
                 }
 
-                pair.Value.SetMaterial(MaterialFor(tile.Symbol, dimmed: !_board.IsFree(tile.Id)));
+                bool dimmed = !_board.IsFree(tile.Id);
+                pair.Value.SetMaterials(MaterialFor(tile.Symbol, dimmed), EmblemMaterial(dimmed));
             }
         }
 
         // The shared red for blocked taps and losses. Created once, like the palette materials.
         private Material RedMaterial => ColorMaterial(RedKey, new Color(0.9f, 0.15f, 0.12f, 1f));
+
+        // The red for an emblem during a flash, so the whole tile reads red. Shared, like the slab's red.
+        private Material RedEmblemMaterial => ColorMaterial(RedEmblemKey, new Color(0.9f, 0.15f, 0.12f, 1f), EmblemGloss);
+
+        // One emblem material per dimmed state, shared by every tile. The shape carries the symbol; the colour is one dark ink.
+        private Material EmblemMaterial(bool dimmed)
+        {
+            Color color = EmblemColor;
+            if (dimmed)
+            {
+                color = new Color(color.r * DimmedBrightness, color.g * DimmedBrightness, color.b * DimmedBrightness, 1f);
+            }
+
+            return ColorMaterial((-2, dimmed), color, EmblemGloss);
+        }
 
         // One material per palette colour and dimmed state, created once and shared by every tile that uses it.
         private Material MaterialFor(int symbol, bool dimmed)
@@ -575,7 +651,7 @@ namespace PulseArena.Game
         }
 
         // One material per key, created once and shared by every tile that uses it.
-        private Material ColorMaterial((int, bool) key, Color color)
+        private Material ColorMaterial((int, bool) key, Color color, float glossiness = BodyGloss)
         {
             if (_materials.TryGetValue(key, out Material material))
             {
@@ -592,8 +668,38 @@ namespace PulseArena.Game
                 material.color = color;                   // Built-in pipeline
             }
 
+            if (material.HasProperty("_Glossiness"))
+            {
+                material.SetFloat("_Glossiness", glossiness);   // Built-in Standard: a soft sheen, so the tiles read as glossy
+            }
+
             _materials.Add(key, material);
             return material;
+        }
+
+        private GameObject CreateSlab(string name, Material material)
+        {
+            var go = new GameObject(name);
+            go.AddComponent<MeshFilter>().sharedMesh = _slabMesh;
+            go.AddComponent<MeshRenderer>().sharedMaterial = material;
+            return go;
+        }
+
+        // The board plate sits under the grid and the tray well under the tray slots. Both follow the level, and both are
+        // resized here rather than rebuilt, so a level start creates no geometry for them.
+        private void LayoutPlates()
+        {
+            float boardWidth = (_spec.GridWidth - 1) * CellSpacing + TileScale + 2f * PlateMargin;
+            float boardDepth = (_spec.GridHeight - 1) * CellSpacing + TileScale + 2f * PlateMargin;
+            _plateHalf = new Vector3(boardWidth * 0.5f, PlateThickness * 0.5f, boardDepth * 0.5f);
+            _boardPlate.transform.localScale = new Vector3(boardWidth, PlateThickness / SlabThickness, boardDepth);
+            _boardPlate.transform.position = new Vector3(0f, -PlateThickness * 0.5f, 0f);
+
+            float trayWidth = (_rules.TrayCapacity - 1) * TraySpacing + TileScale + 2f * PlateMargin;
+            float trayDepth = TileScale + 2f * PlateMargin;
+            _wellHalf = new Vector3(trayWidth * 0.5f, WellThickness * 0.5f, trayDepth * 0.5f);
+            _trayWell.transform.localScale = new Vector3(trayWidth, WellThickness / SlabThickness, trayDepth);
+            _trayWell.transform.position = new Vector3(0f, WellThickness * 0.5f, TrayZ);
         }
 
         private Vector3 BoardPosition(int x, int y, int height)

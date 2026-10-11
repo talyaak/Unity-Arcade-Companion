@@ -146,3 +146,14 @@ Captures for every step are at 576 x 1024 (9:16) and 1920 x 1080 (16:9), in `doc
 - [x] Camera: pitch 60 degrees (was 55), field of view 35 (was 60), solid dark background. Read back in the Editor
 - [x] Framing: board, tray and HUD inside the frame at 9:16 and 16:9 (standalone captures `t10a-portrait-576x1024.png` and `t10a-landscape-1920x1080.png`)
 - [ ] Not in this step: tile look (step b), HUD (step c), GC re-measure (step d)
+
+### Step b: procedural tiles and emblems (`docs/evidence/T10/b-tiles/`, `notes.txt`)
+- [x] Tiles are rounded slabs with a flat emblem, built in code (`TileMeshes.cs`; nothing imported; D13). Seen in both captures
+- [x] Seven distinct emblems (circle, square, triangle, diamond, star, plus, hexagon), readable at 576 x 1024 (`t10b-portrait-576x1024.png`). The colour is not the only cue
+- [x] Stacks step 0.6 units (was 0.95); the layers read as separate tiles; stacks stay vertical per cell
+- [x] Tap target: a BoxCollider on each tile's root covers the slab and the emblem; a hit resolves to the TileView (code read; the Editor Play check of taps is in step d)
+- [x] Portrait framing: tray pitch 1.05 (was 1.5); headroom above the tallest stack is 20 percent of its height (was 1 unit). The board plate is about 78 percent of the portrait width and the tray about 90 percent (estimated from the capture); the content spans about 54 percent of the height, and the rest is for the HUD bars (step c)
+- [x] Build: Unity recompile 0 errors; GameCompile 0 errors (stubs extended, gate unchanged); Development standalone build 0 errors; player log 0 exception lines
+- [ ] Material count flat across taps (D3 as amended by D13): not re-checked yet (step d)
+- [ ] GC: not re-measured in this step (step d; D12 limits unchanged)
+- [ ] HUD: not changed in this step (step c)

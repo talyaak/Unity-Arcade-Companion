@@ -35,7 +35,11 @@ namespace PulseArena.Game
         private float _dropDelay;
         private float _dropT = -1f;
         private float _baseScale = 1f;
-        private Material _current;
+        private Material _body;                  // the state's materials: what the tile shows when it is not flashing
+        private Material _emblem;
+        private Material _shownBody;             // what the renderer shows right now
+        private Material _shownEmblem;
+        private readonly Material[] _slots = new Material[2];   // reused, so a tap does not allocate an array
 
         public int TileId { get; private set; }
 
@@ -87,14 +91,31 @@ namespace PulseArena.Game
             MoveStartedAt = Time.time;
         }
 
-        /// Assigns a shared material for the tile's state. Shared materials keep the renderer from making copies.
-        public void SetMaterial(Material material)
+        /// Assigns the shared materials for the tile's state: the slab's colour and the emblem's. Shared materials keep the
+        /// renderer from making copies. A tile whose state did not change keeps what it shows, so a tap only touches the
+        /// tiles it changed.
+        public void SetMaterials(Material body, Material emblem)
         {
-            _current = material;
+            _body = body;
+            _emblem = emblem;
             if (_flashLeft <= 0f)
             {
-                _renderer.sharedMaterial = material;
+                Show(body, emblem);
             }
+        }
+
+        private void Show(Material body, Material emblem)
+        {
+            if (body == _shownBody && emblem == _shownEmblem)
+            {
+                return;
+            }
+
+            _shownBody = body;
+            _shownEmblem = emblem;
+            _slots[0] = body;
+            _slots[1] = emblem;
+            _renderer.sharedMaterials = _slots;
         }
 
         public void Squash()
@@ -110,11 +131,11 @@ namespace PulseArena.Game
             MaxShakeOffset = 0f;
         }
 
-        /// Blocked tap or loss: the tile shows a shared material for a moment, then its own material again.
-        public void Flash(Material material, float seconds)
+        /// Blocked tap or loss: the tile shows the shared red for a moment (slab and emblem), then its own materials again.
+        public void Flash(Material body, Material emblem, float seconds)
         {
             _flashLeft = seconds;
-            _renderer.sharedMaterial = material;
+            Show(body, emblem);
             FlashStartedAt = Time.time;
             FlashEndedAt = -1f;
         }
@@ -257,7 +278,7 @@ namespace PulseArena.Game
                 _flashLeft -= dt;
                 if (_flashLeft <= 0f)
                 {
-                    _renderer.sharedMaterial = _current;
+                    Show(_body, _emblem);
                     FlashEndedAt = Time.time;
                 }
             }
