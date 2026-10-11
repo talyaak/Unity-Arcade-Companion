@@ -160,3 +160,12 @@ Effect on D7 (seeds 1..200): greedy barely moves; uniform drops, as expected, be
 | 5 | 76% (72) | 0% (0) | 68-84% | 0-8% |
 
 Bands are the new measured value plus or minus 8 points, as in D7. The Core band test caught the change and was updated in this commit; 116 of 116 tests pass. A careless random tapper now loses from stage 3 on; careful play is unchanged. The human playtest (T9) saw no loss on stages 1 to 4 with careful play, which still fits. This changes grid levels for the same seed, so older seed numbers in the notes no longer match their old layouts.
+
+
+## D16: T11 round 2 rulings. Status: decided (2026-10-11)
+
+- **Pile:** the round 2 captures read as a scattered, tilted pile (tiles overlapping, two or three deep, some on the rim). Heap enough for a prototype. Whether it feels good is for a human playtest.
+- **Dense ray check:** accepted as the implementation check for the free-set rule (49 rays across the whole 0.72 footprint, 0 disagreements in 9 runs). It was designed after the sparse checks disagreed, and it samples the same box the rule uses, so it shows the code matches the rule, not that the rule matches what a player sees. The player-facing test is the dim state, which comes from the same free set: a free tile is bright and a covered tile is dim, so a human playtest must say whether "blocked" ever feels unfair. The sparse results stay in the files.
+- **Result-window GC:** frames after a win or loss measured 2.0 to 3.2 KB in the final set but 9.1 KB (win) and 5.2 KB (loss) in an earlier set, over the 4 KB allowance of D12 clarification 2. Accepted for the prototype only. Before physics mode could ship, the cause must be traced and the frame must meet 4 KB, or D12 is revised with evidence.
+- **Settle allocations** (stage 2: about 10 to 13 KB over 17 to 21 frames): Core's `ReportFreeTiles` now reuses one set instead of building a new one on every report (116 of 116 tests pass). The builder re-measures to see how much that explains.
+- **Outcomes:** 1 win and 6 losses on stage 2 in 7 runs is not a sample and no win rate is claimed. The same policy gave a different result at two aspect ratios, probably because the probe taps every 4 frames; not tested. Physics mode is not repeatable across frame rates, which is part of why it has no replay check.

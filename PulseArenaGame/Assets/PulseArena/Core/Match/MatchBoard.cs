@@ -169,16 +169,23 @@ namespace PulseArena.Core
                 throw new ArgumentNullException(nameof(freeTileIds));
             }
 
-            var set = new HashSet<int>();
+            // The set is reused between reports, so a pile that changes often does not allocate on every report.
+            if (_reportedFree == null)
+            {
+                _reportedFree = new HashSet<int>();
+            }
+            else
+            {
+                _reportedFree.Clear();
+            }
+
             foreach (int id in freeTileIds)
             {
                 if (_onBoard.ContainsKey(id))
                 {
-                    set.Add(id);
+                    _reportedFree.Add(id);
                 }
             }
-
-            _reportedFree = set;
         }
 
         public bool IsFree(int tileId)
