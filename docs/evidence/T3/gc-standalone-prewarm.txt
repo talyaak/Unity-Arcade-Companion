@@ -1,0 +1,19 @@
+GC after the HUD pre-warm. Standalone Windows Development build (the same build that makes the HUD captures in docs/evidence/T9/).
+Probe: docs/evidence/T3/probe/StandaloneGcProbe.cs, mode -probe-gc. Greedy bot, one tap per 0.5 s of game time, timeScale 1, 8,999 frames, 426 taps.
+Raw data: docs/evidence/T3/gc-standalone-prewarm-frames.csv.
+
+WHAT CHANGED
+  MatchHud.Start draws every character the HUD uses (WarmUpText) in every label and button for two frames, before the first tap. Update puts the real text back after that.
+  Source of the spikes, as read from the data: the first draw of each glyph in UI Toolkit's dynamic font atlas. The HUD's digits and letters arrive as the score grows, so the spikes stop when the set is complete. The previous build had six of them (593 KB to 1.47 MB), all within the first 300 frames.
+
+RESULTS (HUD on, after the pre-warm)
+  Spikes over 50 KB: none, apart from the startup frame (2,757,961 B, scene start).
+  Idle (no action, no tap in the 20 frames before): n=503. Median 0 B, p90 0 B, p99 0 B.
+  Animation (no action, within 20 frames after a tap): n=8,058. Median 0 B, p90 0 B, p99 390 B, max 6,954 B. None over 50 KB.
+  The frame after a tap: n=426. Median 390 B, p90 394 B, p99 1,306 B, max 36,510 B. None over 50 KB.
+  Tap frames: n=413. Median 2,796 B, p90 5,142 B, p99 5,874 B, max 12,382 B.
+
+WHAT REMAINS
+  About 390 B on the frame after each tap, from the HUD's label updates. The architect accepted this as event work (D12).
+  The 0 B target holds for steady idle and animation frames.
+  Android device numbers are still needed (T7).

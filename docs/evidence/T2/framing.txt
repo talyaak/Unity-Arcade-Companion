@@ -1,0 +1,10 @@
+Stage 5, seed 12345. Tapped into the tray before capture: tiles 40, 51, 12 (distinct symbols). Tray count 3.
+Projection uses the cached fit points (every tile's 8 box corners at its layout position, the 7 tray slots, one popup point above the tallest stack) and WorldToViewportPoint after FitCamera.
+1920x1080 aspect=1.7778 fov=60 camPos=(0.00, 10.92, -6.33) fitPoints=489
+  content viewport x 0.297..0.760 (width 0.463), y 0.023..0.844
+  content points outside viewport: 0
+  tray slot corners x 0.297..0.703, outside: 0
+1080x1920 aspect=0.5625 fov=60 camPos=(0.00, 14.81, -9.06) fitPoints=489
+  content viewport x 0.091..0.969 (width 0.878), y 0.176..0.705
+  content points outside viewport: 0
+  tray slot corners x 0.091..0.909, outside: 0

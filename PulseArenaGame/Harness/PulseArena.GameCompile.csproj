@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Compile-only check for the Unity adapter layer (PulseArena.Game) against UnityEngine stubs.
+    Builds for netstandard2.1 too, the default Unity API profile, so accidental .NET 8-only APIs fail here.
+    It proves the adapter type-checks against the API it uses. It does NOT prove Unity behaviour.
+    Real verification needs the Unity Editor (compile and Play Mode).
+  -->
+
+  <PropertyGroup>
+    <TargetFrameworks>net8.0;netstandard2.1</TargetFrameworks>
+    <LangVersion>9.0</LangVersion>
+    <Nullable>disable</Nullable>
+    <IsPackable>false</IsPackable>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="../Assets/PulseArena/Core/**/*.cs" Link="Core/%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="../Assets/PulseArena/Game/**/*.cs" Link="Game/%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="UnityStubs/**/*.cs" />
+  </ItemGroup>
+
+</Project>

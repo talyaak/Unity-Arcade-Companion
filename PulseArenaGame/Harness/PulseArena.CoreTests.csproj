@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Out-of-Unity harness: compiles the engine-free Core and the Edit Mode test sources
+    exactly as Unity would, so the logic is verified here with `dotnet test`.
+    LangVersion 9.0 matches the C# level of Unity 2022.3 LTS and Unity 6.
+    This does NOT replace running the Unity Test Runner (Window > General > Test Runner, EditMode).
+  -->
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>9.0</LangVersion>
+    <Nullable>disable</Nullable>
+    <IsPackable>false</IsPackable>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="../Assets/PulseArena/Core/**/*.cs" Link="Core/%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="../Assets/PulseArena/Tests/EditMode/**/*.cs" Link="Tests/%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="PulseArenaPerfTests.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+    <PackageReference Include="NUnit" Version="3.14.0" />
+    <PackageReference Include="NUnit3TestAdapter" Version="4.6.0" />
+  </ItemGroup>
+
+</Project>

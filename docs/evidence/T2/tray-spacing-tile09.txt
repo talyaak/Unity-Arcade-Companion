@@ -1,0 +1,7 @@
+Tile scale 0.9 units, tray pitch 1.5 units (board cell pitch is 1.15). Stage 5, seed 4242, three tiles in the tray.
+Measured on the captures in this folder: background-only columns between adjacent tray tiles, on one row band.
+- 1920x1080 (stage5-landscape-16x9-tile09.png), rows 900-1060: gaps 24 px and 24 px. No overlap.
+- 1080x1920 (stage5-portrait-9x16-tile09.png), rows 1340-1380: gaps 42 px and 46 px. No overlap.
+Method: column-by-column scan of each PNG (PIL). Projected-silhouette estimates (landscape -3.6 px at this pitch) were
+conservative and are superseded by this pixel measure.
+Not measured: live window resize; a separate pass for cubes and spheres.

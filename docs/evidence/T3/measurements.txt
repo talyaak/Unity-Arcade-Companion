@@ -1,0 +1,59 @@
+T3 measurements. Unity 6000.4.0f1, Play Mode, Editor. Game time from Time.time.
+Method: taps from the Editor update loop, not from eval, so the stamps are taken between frames (frame delta about 6.6 ms, about 150 fps).
+Fields read: TileView, MatchPopup, MatchController, MatchEffects and MatchHud verification properties. The game does not read them.
+Design values are from docs/GAME_DESIGN.md (Motion). Measured values are within one frame of the design unless noted.
+
+MOVE TO TRAY (stage 5, seed 4242, one free tile tapped into the tray; update-driven)
+  duration 0.253 s (design 0.25 s, ease-out)
+  peak arc above the straight path 0.300 units (design 0.3)
+
+BLOCKED TAP (covered tile; update-driven)
+  shake duration 0.302 s (design 0.3 s); peak horizontal offset 0.120 units (design 0.12)
+  red flash duration 0.154 s (design 0.15 s); the flash uses the shared red material
+
+DIM AND BRIGHT TINT (same symbol 5, stage 5)
+  bright (free tile) (0.450, 0.680, 0.950); dim (covered tile) (0.203, 0.306, 0.428)
+  ratio 0.450 (design: covered tiles dimmed to 45% brightness)
+
+CLEAR (triple; update-driven)
+  hit-stop, tap to pop start: 0.069 s (design 0.060 s, one frame of error)
+  burst: 12 particles per cleared tile, 36 for a triple (design: at most 12 per tile)
+  popup: '+100' (world-space TextMesh, placed over the tray slot where the triple formed)
+  Core clock: keeps running during the presentation (clock advanced from 27.546 to 33.724 during the run)
+
+POPUP (world-space '+points')
+  duration 0.900 s (design 0.9 s); rise 0.600 units (design 0.6); alpha reaches 0 at the end (fades over 0.9 s)
+
+CAMERA NUDGE (clear at combo 3 or more, stage 1 win run, Reduce Motion off)
+  duration 0.155 s (design 0.15 s); peak offset 0.0431 units (design: at most 0.05)
+
+WIN CONFETTI (stage 1, greedy win, Reduce Motion off)
+  60 particles released in 3 waves of 20 (design: 60 in total)
+  first wave to last wave 0.707 s (waves 0.35 s apart; design: waves)
+  live particles: peak 40 (hard cap: Max Particles 40; design: never more than 40 live)
+
+LOSS (stage 5, greedy loss with 7 tiles in the tray; update-driven)
+  tray red flash 0.301 s (design 0.3 s); the drop starts 0.311 s after the flash starts
+  drop 0.500 units in 0.498 s (design 0.5 units)
+  NOT implemented as designed: the fade is a shrink to zero. No transparent material is used, so the alpha fade is not done.
+  The flash is on the tray tiles, not on empty slot markers (the slots have no visuals).
+
+RESULT PANEL (HUD, on Won and Lost)
+  slide 0.290 s (design 0.3 s): margin from 160 px to 0, opacity from 0 to 1
+
+REDUCE MOTION ON
+  blocked tap: shake never starts (peak offset 0.000); red flash kept, 0.153 s
+  clear: hit-stop 0.006 s, i.e. none (one frame)
+  win (stage 1): 0 confetti particles released
+  camera nudge: NOT confirmed in the Reduce Motion run (the combo reached in that run was not logged)
+
+LAST-SLOT TRIPLE (see last-slot-triple.txt): tray 6 to 4, state Playing, no loss.
+
+FRAMING, FramingMargin 1.10 (see docs/evidence/T2/framing-margin110.txt)
+  all fit points inside the viewport at 16:9 and 9:16; the tray is visible in both captures
+  margins: bottom 4.5% at 16:9; sides 4.9% at 9:16 (below the 7% estimated before the change)
+
+NOT VERIFIED IN THIS PASS
+  tap squash (0.12 s, to 0.9 and back): implemented, not measured
+  touch on a device (T7); feel (playtest, T5)
+  GC Alloc 0 B per frame: NOT met in the Editor; see gc-profiler.txt

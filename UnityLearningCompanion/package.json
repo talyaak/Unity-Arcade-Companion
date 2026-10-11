@@ -1,0 +1,11 @@
+{
+  "name": "com.talyaak.unity-learning-companion",
+  "version": "0.1.0",
+  "displayName": "Unity Learning Companion",
+  "description": "Editor-only learning tool: scans a Unity project's assembly structure and C# declarations, labels every claim as verified or inferred, and offers concept notes, missions and interview practice. It never writes project files.",
+  "unity": "2022.3",
+  "keywords": ["editor", "learning", "architecture"],
+  "author": {
+    "name": "talyaak"
+  }
+}

@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Compile-only check for the Editor shell against UnityEditor/UnityEngine stubs. It does NOT prove the window works in Unity.
+    Builds net8.0 and netstandard2.1 so the shell matches the API surface Unity exposes.
+  -->
+
+  <PropertyGroup>
+    <TargetFrameworks>net8.0;netstandard2.1</TargetFrameworks>
+    <LangVersion>9.0</LangVersion>
+    <Nullable>disable</Nullable>
+    <IsPackable>false</IsPackable>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="../UnityLearningCompanion/Editor/Core/**/*.cs" Link="Core/%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="../UnityLearningCompanion/Editor/Shell/**/*.cs" Link="Shell/%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="UnityEditorStubs.cs" />
+  </ItemGroup>
+
+</Project>

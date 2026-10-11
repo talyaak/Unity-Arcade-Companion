@@ -1,0 +1,13 @@
+level=stage5
+mode=lost
+materialsBefore=44
+state=Lost tray=7 tilesCleared=0 score=0 combo=0 remainingOnBoard=47 totalTiles=54 taps=7
+materialsAfter=44
+hudStage=5
+hudScore=0
+hudCleared=0 / 54
+hudBanner=Tray full
+hudDetail=Score 0
+hudRetryDisplay=Flex
+hudNextDisplay=None
+screenshot=t10d-lost5b-landscape.png

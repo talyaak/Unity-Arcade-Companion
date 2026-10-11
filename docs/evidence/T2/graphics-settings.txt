@@ -1,0 +1,3 @@
+Tool: mcp__unity-editor-mcp__get_graphics_settings (2026-10-11, Unity 6000.4.0f1, Editor)
+{"defaultRenderPipeline": null, "defaultRenderPipelinePath": null, "usingScriptableRenderPipeline": false}
+Tile.mat uses the Standard shader (Built-in).

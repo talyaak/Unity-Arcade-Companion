@@ -1,0 +1,41 @@
+run=C:\Dev\Unity-Arcade-Companion\PulseArenaGame\Builds\T11-Shots\PulseArenaGame.exe -t11-play -screen-width 1024 -screen-height 576 -t11-shot-falling s1-landscape-falling.png -t11-shot-pile s1-landscape-pile.png -t11-shot-end s1-landscape-end.png
+stage=1 totalTiles=12 bodiesAtStart=12 seed=20261011 chosenSeed=20261011 seedSkipped=0 allSymbols=False
+symbols=0:0 1:9 2:3 distinct=2
+policy=greedy reduceMotion=False
+settled=True settleSeconds=0.83
+reportedFree=9 reportedCovered=3 rayCovered=3 disagreements=0
+coveredTap id=0 outcome=Blocked
+coveredTapMovedDistance=0.0000
+materialsBefore=44 materialsAfterEnd=44
+state=Won tray=0 tilesCleared=12 score=1000 combo=4 bestCombo=4 remainingOnBoard=0 totalTiles=12 taps=12 blocked=0 playSeconds=1.8 bodies=0 endReason=state
+confettiEmitted=60 burstCount=12
+gcLevelStart=9152
+tap 0 id=2 symbol=1 outcome=Moved trayBefore=0 trayAfter=1 free=9 state=Playing
+tap 1 id=3 symbol=1 outcome=Moved trayBefore=1 trayAfter=2 free=8 state=Playing
+tap 2 id=4 symbol=1 outcome=Cleared trayBefore=2 trayAfter=0 free=7 state=Playing
+tap 3 id=5 symbol=1 outcome=Moved trayBefore=0 trayAfter=1 free=6 state=Playing
+tap 4 id=7 symbol=1 outcome=Moved trayBefore=1 trayAfter=2 free=5 state=Playing
+tap 5 id=8 symbol=1 outcome=Cleared trayBefore=2 trayAfter=0 free=4 state=Playing
+tap 6 id=1 symbol=1 outcome=Moved trayBefore=0 trayAfter=1 free=4 state=Playing
+tap 7 id=9 symbol=1 outcome=Moved trayBefore=1 trayAfter=2 free=3 state=Playing
+tap 8 id=11 symbol=1 outcome=Cleared trayBefore=2 trayAfter=0 free=3 state=Playing
+tap 9 id=6 symbol=2 outcome=Moved trayBefore=0 trayAfter=1 free=2 state=Playing
+tap 10 id=10 symbol=2 outcome=Moved trayBefore=1 trayAfter=2 free=1 state=Playing
+tap 11 id=0 symbol=2 outcome=Won trayBefore=2 trayAfter=0 free=1 state=Won
+hudStage=1
+hudScore=1000
+hudCleared=12 / 12
+hudBanner=Level cleared
+hudDetail=Score 1000
+hudRetryDisplay=None
+hudNextDisplay=Flex
+gcSettle frames=47 median=0 p90=0 max=9152 framesAllocating=4 totalBytes=11000
+gcPlay frames=139 median=0 p90=462 max=4833 framesAllocating=40 totalBytes=26477
+screenshotFalling=s1-landscape-falling.png
+screenshotPile=s1-landscape-pile.png
+screenshotEnd=s1-landscape-end.png
+restart=NextStage restartStage=2 restartTotalTiles=21 restartBodies=21 restartState=Playing restartSettled=True restartSettleSeconds=1.00 restartReportedFree=16 restartTapOutcome=Moved
+materialsAfterRestart=44
+gcRestart frames=60 median=0 p90=0 max=17726 framesAllocating=5 totalBytes=20146
+exceptions=0
+consoleLogPath=C:/Users/TalYaakov/AppData/LocalLow/DefaultCompany/PulseArenaGame/Player.log

@@ -1,0 +1,41 @@
+T10 step d: GC, material count, covered against free, result card, and the Cleared fix (2026-10-11, builder)
+
+Fixes made in this step:
+1. Cleared bar (architect's review of step c): MatchHud counted tiles in the tray as cleared (total minus RemainingOnBoard,
+   which excludes the tray). It now reads Core's TilesCleared.
+2. Stale total: a new level whose cleared count matched the old one kept the old total (stage 5 read "Cleared 0 / 12" over
+   stage 1's total). A new board now refreshes every HUD value (MatchHud.Update).
+
+Checks: standalone Development build of the Match scene. A temporary probe ran the checks (T10DProbe.cs, a text copy in
+probe/; not committed, it lived in Assets/Temp, which git ignores). The GC run used the existing probe (-probe-gc).
+Player log: 0 exception lines in every run.
+
+Material count (the architect's watch item; D3 as amended by D13):
+- Resources.FindObjectsOfTypeAll<Material>: 44 at the start, after 3 taps and after 9 taps (t10d-sample-portrait.txt). Flat.
+
+Covered tile against free tile (the architect's watch item):
+- Same palette colour (yellow), first sample run (t10d-sample-portrait.txt): free body (0.970, 0.800, 0.350), free emblem
+  (0.100, 0.120, 0.160); covered body (0.437, 0.360, 0.158), covered emblem (0.045, 0.054, 0.072). Luminance covered over free
+  = 0.45 (the dim factor). The slab uses one material for its top and sides, so the dim shows on both; the emblem dims too.
+- The final sample run (t10d-sample-final.txt) compared a yellow free tile with a teal covered tile (different colours), so its
+  ratio of 0.36 is not a like-for-like reading. The 0.45 pair above is the reading for this step.
+
+Cleared after a triple (stage 5; t10d-clear5-portrait.txt and .png, t10d-clear5-landscape.txt and .png): tray 0, tilesCleared 3,
+score 100, HUD "Cleared 3 / 54", combo 1.
+
+Result card, Tray full (stage 5, seven distinct tiles in the tray; t10d-lost5b-portrait.txt and .png, and the landscape pair):
+state Lost, banner "Tray full", detail "Score 0", Retry shown, Next stage hidden, "Cleared 0 / 54", "Tray 7 / 7" with the warm
+slots. Seen in both aspects.
+Level cleared (stage 1, from an earlier run of this build family): banner "Level cleared", Next stage shown, Retry hidden.
+
+Pressed button look: NOT captured. The :active rule is in MatchHud.uss; a still frame needs a press held during the capture.
+
+GC (-probe-gc, 8,999 frames, gc-frames.csv; the analysis is in gc-analysis.txt):
+- D12 limits met: board tap frames max 5,724 B (limit 16 KB); level-start frames max 41,986 B (limit 50 KB); no frame over
+  50 KB after the 300-frame warm-up.
+- Steady frames: median and p90 0 B. 57 of 8,138 steady frames allocate (44,592 B in total). 56 of those 57 fall within 25
+  frames after a win or loss, which is the result card slide (UI Toolkit style updates for 0.3 s).
+
+Watch item for the architect: the result card slide allocates for about 18 frames after a win or loss (up to 2 KB a frame).
+It is event work, like the tap frames, but the D12 wording says 0 B on frames with no tap. Options: accept the slide as event
+work, or change the slide to fewer style writes (re-measure if changed).

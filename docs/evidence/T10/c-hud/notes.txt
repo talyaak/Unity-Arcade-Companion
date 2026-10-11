@@ -1,0 +1,32 @@
+T10 step c: HUD bars and buttons, framing between the HUD blocks (2026-10-11, builder)
+
+Captures (standalone Development build, Match scene, probe-shot mode, stage 5 with three tiles in the tray):
+- t10c2-portrait-576x1024.png
+- t10c2-landscape-1920x1080.png
+
+HUD (UI Toolkit, D6; styling in Assets/PulseArena/UI/MatchHud.uss; built in Game/Match/MatchHud.cs):
+- Top bar: a stage badge, the score, and the Reduce motion button at the top right (same behaviour as before).
+- Progress panel: "Cleared n / total" with a bar (cleared over the level's total), and "Combo n" with a bar (full at 5,
+  stays full above 5).
+- Tray panel at the bottom: "Tray n / 7" and seven slots. A slot is lit when a tile is in it, and the lit slots turn warm
+  (coral) when the tray holds six or seven.
+- Result card (Level cleared or Tray full, the score, and Next stage or Retry): slides in over 0.3 s as before. The buttons
+  have a darker lower border that shrinks when pressed (:active). The result card is not in these two frames (see Not verified).
+- No timers, stars, lives, coins, shop or boosters (D4; no money-like items).
+
+Framing: the camera frames the board in the band between the HUD blocks (HudTopReserve 0.2 and HudBottomReserve 0.1 of
+the screen height). The view direction does not change: the camera moves along its own up axis, so the 2.5D angle holds.
+- Portrait: the top block ends near 17 percent of the height; the bottom block starts near 93 percent. The board sits
+  between them and fills about 84 percent of the width.
+- Landscape (1920 x 1080): a compact style (USS .hud-landscape, set on the root when the screen is wider than tall) keeps
+  the top block near 25 percent and the bottom block near 8 percent. The first draft overlapped the top stacks and the tray;
+  that was fixed in this step, and the second captures show no overlap.
+
+Warm-up: every label and button draws WarmUpText for two frames before the first tap (unchanged rule). WarmUpText now covers
+the new labels: letters in both cases, digits, and the words the HUD shows.
+
+Build and checks: Unity recompile 0 errors; GameCompile 0 errors (stubs extended, gate unchanged); Development standalone
+build 0 errors (6 warnings, from the temporary probe); player log 0 exception lines.
+
+Not verified in this step: the result card and the pressed look of a button (not in these frames; the Editor check is in
+step d), GC (step d), the material count across taps (step d), and the covered-against-free contrast (step d).

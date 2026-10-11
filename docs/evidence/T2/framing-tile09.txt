@@ -1,0 +1,7 @@
+Tile scale 0.9 units, tray pitch 1.5 units, stage 5, seed 4242, three tiles in the tray. Projection of every fit point (tiles' corners, tray slots, popup point) after FitCamera. Supersedes framing.txt for the 1.0-pitch tray.
+1920x1080 aspect=1.7778 camPos=(0.00, 10.27, -6.21) fitPoints=489
+  content viewport x 0.196..0.804 (width 0.608), y 0.024..0.862
+  content points outside viewport: 0
+1080x1920 aspect=0.5625 camPos=(0.00, 16.94, -10.88) fitPoints=489
+  content viewport x 0.026..0.974 (width 0.948), y 0.245..0.703
+  content points outside viewport: 0

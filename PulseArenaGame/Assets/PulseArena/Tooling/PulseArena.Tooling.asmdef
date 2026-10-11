@@ -1,0 +1,18 @@
+{
+    "name": "PulseArena.Tooling",
+    "rootNamespace": "PulseArena.Tooling",
+    "references": [
+        "PulseArena.Game"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

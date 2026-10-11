@@ -1,0 +1,39 @@
+run=C:\Dev\Unity-Arcade-Companion\PulseArenaGame\Builds\T11-Shots\PulseArenaGame.exe -t11-play -t11-stage2 -t11-avoid -screen-width 1024 -screen-height 576 -t11-shot-end s2-landscape-avoid-loss-end.png
+stage=2 totalTiles=21 bodiesAtStart=21 seed=20261011 chosenSeed=20261011 seedSkipped=0 allSymbols=False
+symbols=0:6 1:6 2:3 3:6 distinct=4
+policy=avoid reduceMotion=False
+settled=True settleSeconds=2.16
+spawnWaves=3 spawnTopFace=3.85 spawnOverlapPairs=0
+heap tilesAboveFloor=5 topFaceMax=1.52 spreadMax=3.20
+reportedFree=15 reportedCovered=6 rayCovered=3 disagreements=3 contactDisagreements=2 contactInsideDisagreements=1 denseDisagreements=0
+mismatch tile=0 reportedFree=False contactAbove=False contactInside=True dense=True centreRayCovered=False gapAbove=0.064
+mismatch tile=10 reportedFree=False contactAbove=False contactInside=False dense=True centreRayCovered=False gapAbove=0.196
+coveredTap id=0 outcome=Blocked
+coveredTapMovedDistance=0.0007
+materialsBefore=44 materialsAfterEnd=44
+state=Lost tray=7 tilesCleared=0 score=0 combo=0 bestCombo=0 remainingOnBoard=14 totalTiles=21 taps=7 blocked=0 playSeconds=1.5 bodies=21 endReason=state
+confettiEmitted=0 burstCount=0
+gcLevelStart=18982
+tap 0 id=1 symbol=2 outcome=Moved trayBefore=0 trayAfter=1 free=15 state=Playing
+tap 1 id=3 symbol=3 outcome=Moved trayBefore=1 trayAfter=2 free=14 state=Playing
+tap 2 id=4 symbol=0 outcome=Moved trayBefore=2 trayAfter=3 free=13 state=Playing
+tap 3 id=15 symbol=1 outcome=Moved trayBefore=3 trayAfter=4 free=13 state=Playing
+tap 4 id=5 symbol=3 outcome=Moved trayBefore=4 trayAfter=5 free=12 state=Playing
+tap 5 id=6 symbol=1 outcome=Moved trayBefore=5 trayAfter=6 free=12 state=Playing
+tap 6 id=8 symbol=0 outcome=Lost trayBefore=6 trayAfter=7 free=11 state=Lost
+hudStage=2
+hudScore=0
+hudCleared=0 / 21
+hudBanner=Tray full
+hudDetail=Score 0
+hudRetryDisplay=Flex
+hudNextDisplay=None
+gcSettle frames=129 median=0 p90=728 max=18982 framesAllocating=21 totalBytes=31582
+gcPlay frames=121 median=0 p90=728 max=4105 framesAllocating=30 totalBytes=25871
+gcPlayMax=4105 tapFrame=False afterResult=False secondsAfterResult=-1.00
+screenshotEnd=s2-landscape-avoid-loss-end.png
+restart=Retry restartStage=2 restartTotalTiles=21 restartBodies=21 restartState=Playing restartSettled=True restartSettleSeconds=3.67 restartReportedFree=12 restartTapOutcome=Moved
+materialsAfterRestart=44
+gcRestart frames=220 median=0 p90=216 max=15710 framesAllocating=24 totalBytes=30034
+exceptions=0
+consoleLogPath=C:/Users/TalYaakov/AppData/LocalLow/DefaultCompany/PulseArenaGame/Player.log

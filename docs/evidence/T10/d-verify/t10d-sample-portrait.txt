@@ -1,0 +1,17 @@
+mode=sample
+materialsBefore=44
+materialsAfterThreeTaps=44
+materialsAfterNineTaps=44
+state=Playing tray=3 tilesCleared=6 score=300 combo=2 remainingOnBoard=3 totalTiles=12 taps=9
+materialsAfter=44
+hudStage=1
+hudScore=300
+hudCleared=6 / 12
+hudBanner=
+hudDetail=
+hudRetryDisplay=None
+hudNextDisplay=None
+freeTileFound=True coveredTileFound=True
+freeBody=RGBA(0.970, 0.800, 0.350, 1.000) freeEmblem=RGBA(0.100, 0.120, 0.160, 1.000)
+coveredBody=RGBA(0.437, 0.360, 0.158, 1.000) coveredEmblem=RGBA(0.045, 0.054, 0.072, 1.000)
+luminanceFree=0.803652 luminanceCovered=0.3616434 coveredOverFree=0.45
