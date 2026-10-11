@@ -125,7 +125,7 @@ Game view only advances while the Editor is the active window; `Application.runI
 ## Human playtest (T9; needs the user)
 - [x] Standalone release build of the Match scene: `PulseArenaGame/Builds/T9-Playtest/PulseArenaGame.exe` (git-ignored; Build Settings unchanged). Smoke-tested by the builder (12 s run): starts, responds, no exceptions in the log
 - [x] Player note for the playtester: `docs/playtests/T9-player-note.md`
-- [ ] Human playtest of stages 1 to 5, written up in `docs/playtests/2026-10-11-human.md`. **Review requested:** every question answered except stage 5 (not played) and the build copy (not confirmed)
+- [x] Human playtest of stages 1 to 5, written up in `docs/playtests/2026-10-11-human.md`. **Accepted as done** by the architect (1eda29b). Recorded gaps: stage 5 not played; build copy not confirmed
 - [x] Stages 1 to 4 played by one person (reported by the user; not observed by the builder)
 - [ ] Time to clear for each stage. **Partly:** one range reported, "about 10 seconds, maybe 15 in the hardest", not per stage. It is the player's clock, not game seconds
 - [x] Stage 1: rules understood without reading anything (reported: "everything made sense")
@@ -137,3 +137,12 @@ Game view only advances while the Editor is the active window; `Application.runI
 - [x] Windows 11 Pro, 27-inch at 1920 x 1080 (reported). No screenshot from the player; the builder's captures are in `docs/evidence/T9/`
 - [ ] Stage 5 played. **Not verified:** not played; the player stopped before it ("looked like a lot") and said this is not meant as a comment
 - [ ] Build copy confirmed as the T9 release build. **Not confirmed**
+
+## Polish after T9 (T10; D13: 2.5D camera, portrait default, tile look, UI bars and buttons)
+Captures for every step are at 576 x 1024 (9:16) and 1920 x 1080 (16:9), in `docs/evidence/T10/<step>/`.
+
+### Step a: portrait default and 2.5D camera (`docs/evidence/T10/a-portrait-camera/`)
+- [x] Player Settings: standalone windowed 540 x 960, not native, resizable; mobile default orientation Portrait with portrait autorotate only. Read back in the Editor (`notes.txt`). The Editor's Game view aspect is local state and is not set
+- [x] Camera: pitch 60 degrees (was 55), field of view 35 (was 60), solid dark background. Read back in the Editor
+- [x] Framing: board, tray and HUD inside the frame at 9:16 and 16:9 (standalone captures `t10a-portrait-576x1024.png` and `t10a-landscape-1920x1080.png`)
+- [ ] Not in this step: tile look (step b), HUD (step c), GC re-measure (step d)

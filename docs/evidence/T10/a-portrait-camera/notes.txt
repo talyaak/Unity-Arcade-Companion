@@ -1,0 +1,21 @@
+T10 step a: portrait default and 2.5D camera (2026-10-11, builder)
+
+Editor (Unity 6000.4.0f1), read back with eval after the change:
+- Player Settings: defaultScreenWidth 540, defaultScreenHeight 960, defaultIsNativeResolution False,
+  fullScreenMode Windowed, resizableWindow True, defaultInterfaceOrientation Portrait,
+  allowedAutorotateToPortrait True, allowedAutorotateToPortraitUpsideDown False,
+  allowedAutorotateToLandscapeLeft False, allowedAutorotateToLandscapeRight False.
+  Before: 1920 x 1080 native, FullScreenWindow, AutoRotation, all four autorotate flags True.
+- Match scene camera (Assets/PulseArena/Scenes/Match.unity, rebuilt by Pulse Arena > Build Match Scene):
+  rotation (60, 0, 0) (was 55), fieldOfView 35 (was the default 60), clearFlags SolidColor,
+  backgroundColor (0.07, 0.12, 0.16). One directional light. Position is set by FitCamera at runtime.
+
+Standalone Development build (PulseArenaGame/Builds/T10-Shots/, git-ignored), Match scene, probe-shot mode:
+- Build: 0 errors, 6 warnings. The first warnings listed in the report are from the temporary capture probe in
+  Assets/Temp (removed after the build), not from game code.
+- t10a-portrait-576x1024.png (576 x 1024) and t10a-landscape-1920x1080.png (1920 x 1080).
+- Both runs exit 0. Player log: 0 exception lines.
+- In both frames the board, the tray (3 of 7 tiles) and the HUD are inside the frame.
+
+Not verified in this step: the tile look (still primitives until step b), the HUD (step c), the GC figures (step d),
+and the Editor Game view aspect (local state, not set).

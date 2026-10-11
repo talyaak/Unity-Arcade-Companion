@@ -80,12 +80,17 @@ namespace PulseArena.Tooling
             hudSerialized.FindProperty("_match").objectReferenceValue = controller;
             hudSerialized.ApplyModifiedPropertiesWithoutUndo();
 
-            // Look down at the board from the front, so the tray sits near the camera and the stacks are visible.
+            // A 2.5D view (T10, D13): a steeper look-down than the T2 baseline (55 degrees) and a narrower field of view, so the
+            // stacks show their depth without leaning. FitCamera moves the camera along this view axis, so the framing holds at
+            // any aspect ratio. The background is a dark solid, so the tiles and tray read against it.
             Camera camera = Camera.main;
             if (camera != null)
             {
                 camera.transform.position = new Vector3(0f, 13f, -9f);
-                camera.transform.rotation = Quaternion.Euler(55f, 0f, 0f);
+                camera.transform.rotation = Quaternion.Euler(60f, 0f, 0f);
+                camera.fieldOfView = 35f;
+                camera.clearFlags = CameraClearFlags.SolidColor;
+                camera.backgroundColor = new Color(0.07f, 0.12f, 0.16f, 1f);
             }
 
             // Exactly one directional light, with soft shadows. The new scene brings its own, so keep that one and
