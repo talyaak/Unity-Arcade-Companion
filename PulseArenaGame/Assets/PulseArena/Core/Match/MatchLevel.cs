@@ -68,10 +68,18 @@ namespace PulseArena.Core
             }
 
             // One symbol per triple, shared by its three tiles, so every symbol count is a multiple of three.
+            // When there are enough triples, every symbol appears at least once, so a level never has fewer kinds than
+            // its spec says (with three kinds the tray can never fill, so the level could not be lost).
             int[] tripleSymbols = new int[spec.TripleCount];
             for (int triple = 0; triple < spec.TripleCount; triple++)
             {
-                tripleSymbols[triple] = random.NextInt(spec.SymbolCount);
+                tripleSymbols[triple] = triple < spec.SymbolCount ? triple : random.NextInt(spec.SymbolCount);
+            }
+
+            for (int i = tripleSymbols.Length - 1; i > 0; i--)
+            {
+                int j = random.NextInt(i + 1);
+                (tripleSymbols[i], tripleSymbols[j]) = (tripleSymbols[j], tripleSymbols[i]);
             }
 
             var tiles = new List<MatchTile>(tileCount);

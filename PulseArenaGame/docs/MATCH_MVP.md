@@ -25,7 +25,7 @@ All of these values are this game's own starting points. They are not taken from
 clear order always frees the next tile, so every generated level is winnable. Tests tap that order through the real
 board, for every stage and 100 seeds, and check that the tray never holds more than two tiles.
 
-## Difficulty (simulator, 200 seeds per stage)
+## Difficulty (simulator, 200 seeds per stage; superseded by D15 in docs/DECISIONS.md: greedy 100/97/94/85/76, uniform 100/54/7/0/0)
 
 | Stage | Symbols | Triples | Grid | Uniform random taps | Greedy (prefers the tray's symbol) |
 |---|---|---|---|---|---|

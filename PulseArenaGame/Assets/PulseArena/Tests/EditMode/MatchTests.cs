@@ -244,6 +244,32 @@ namespace PulseArena.Tests
         }
 
         [Test]
+        public void Generate_EveryStageUsesEverySymbol_ForEverySeed()
+        {
+            foreach (MatchLevelSpec spec in MatchStages.All)
+            {
+                for (ulong seed = 1; seed <= 300; seed++)
+                {
+                    MatchLevel level = MatchLevelGenerator.Generate(spec, seed);
+
+                    Assert.AreEqual(spec.SymbolCount, level.Tiles.Select(t => t.Symbol).Distinct().Count(),
+                        $"symbols {spec.SymbolCount} seed {seed}");
+                }
+            }
+        }
+
+        [Test]
+        public void EveryStage_WithFourOrMoreSymbols_CanBeLost_ButStageOneCannot()
+        {
+            // A tray of 7 can hold two of each symbol without a triple, so it fills only with 4 or more symbols.
+            foreach (MatchLevelSpec spec in MatchStages.All)
+            {
+                bool canFill = spec.SymbolCount * (MatchBoard.MatchSize - 1) >= Rules().TrayCapacity;
+                Assert.AreEqual(spec.SymbolCount >= 4, canFill, $"symbols {spec.SymbolCount}");
+            }
+        }
+
+        [Test]
         public void IntendedOrder_WinsEveryStage_AndTrayNeverHoldsMoreThanTwo()
         {
             foreach (MatchLevelSpec spec in MatchStages.All)
@@ -406,16 +432,16 @@ namespace PulseArena.Tests
             }
         }
 
-        // Target bands per stage (docs/DECISIONS.md, D7). Measured on seeds 1..200, then widened by 8 points each way
+        // Target bands per stage (docs/DECISIONS.md, D7, re-measured in D15 after every level got every symbol). Measured on seeds 1..200, then widened by 8 points each way
         // (about 2.3 standard errors at 200 seeds). Order: greedy min, greedy max, uniform min, uniform max.
         // Change a band only with a DECISIONS entry. A stage-size change that breaks a band must update both.
         private static readonly double[][] PacingBands =
         {
             new[] { 0.92, 1.00, 0.92, 1.00 },
-            new[] { 0.91, 1.00, 0.65, 0.81 },
-            new[] { 0.88, 1.00, 0.17, 0.33 },
-            new[] { 0.76, 0.92, 0.00, 0.12 },
-            new[] { 0.64, 0.80, 0.00, 0.08 }
+            new[] { 0.89, 1.00, 0.46, 0.62 },
+            new[] { 0.86, 1.00, 0.00, 0.15 },
+            new[] { 0.77, 0.93, 0.00, 0.08 },
+            new[] { 0.68, 0.84, 0.00, 0.08 }
         };
 
         [Test]
@@ -446,4 +472,5 @@ namespace PulseArena.Tests
         }
     }
 }
+
 

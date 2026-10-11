@@ -144,3 +144,19 @@ Request (user, via the builder): pressable tiles that move freely under gravity,
   5. Original work only. No physics-game assets imported.
 - **Evidence expected:** a short capture or frame set of the pile settling, the free set read back against what is visibly uncovered, a Blocked tap on a covered tile, a win and a loss, the material count flat, and a GC reading during the pile settling (it will exceed the grid mode's steady 0 B; record it, do not hide it).
 - **Would change:** if the prototype feels worse than the grid game, or cannot hold frame time on the Android run (T7), keep it as an experiment and do not ship it.
+
+
+## D15: Every level uses every symbol; stage 1 cannot be lost; bands re-measured. Status: decided (2026-10-11)
+
+Found by the builder in T11. (1) A tray of 7 holds at most 2 of each symbol without a triple, so a level can be lost only with 4 or more symbols. Stage 1 (3 symbols) cannot be lost, in either mode. Accepted on purpose: stage 1 is the teaching stage (D7 intent). A test now states it. (2) `MatchLevelGenerator` drew each triple's symbol independently, so about half of the stage 2 layouts had only 3 symbols and could not be lost, and higher stages could silently lose a kind. Fixed in Core: when there are enough triples, every symbol appears at least once (the first triples take distinct symbols, then the triples are shuffled). Test: `Generate_EveryStageUsesEverySymbol_ForEverySeed`.
+Effect on D7 (seeds 1..200): greedy barely moves; uniform drops, as expected, because levels are no longer accidentally easy.
+
+| Stage | Greedy (was) | Uniform (was) | Greedy band | Uniform band |
+|---|---|---|---|---|
+| 1 | 100% (100) | 100% (100) | 92-100% | 92-100% |
+| 2 | 97% (99) | 54% (73) | 89-100% | 46-62% |
+| 3 | 94% (96) | 7% (25) | 86-100% | 0-15% |
+| 4 | 85% (84) | 0% (4) | 77-93% | 0-8% |
+| 5 | 76% (72) | 0% (0) | 68-84% | 0-8% |
+
+Bands are the new measured value plus or minus 8 points, as in D7. The Core band test caught the change and was updated in this commit; 116 of 116 tests pass. A careless random tapper now loses from stage 3 on; careful play is unchanged. The human playtest (T9) saw no loss on stages 1 to 4 with careful play, which still fits. This changes grid levels for the same seed, so older seed numbers in the notes no longer match their old layouts.
