@@ -15,6 +15,23 @@ The earlier one-tap challenge game is kept as a prototype, with its own scene an
 | Match view: `MatchController`, `TileView`; scene builder "Pulse Arena > Build Match Scene" | Written. **Compile-checked against stubs only; not run in Unity** |
 | Feel and touch | **Not verified** |
 
+## Physics mode (prototype, D14)
+
+The same match rules with the tiles as rigid bodies in a pile. Scene `Assets/PulseArena/Scenes/Physics.unity`. It is not in Build Settings and not in the player menu yet.
+
+| Area | Status |
+|---|---|
+| Free tiles come from the physics: a tile is free when nothing rests on it and it is still | Built. Core still decides every tap |
+| Taps pick the nearest tile, so the invisible walls around the pile no longer swallow them | Fixed in `38afc3e`. Checked by ray tests in Play Mode; a real click on the phone is the test that counts |
+| Human playtest (is the pile fun, is blocked ever unfair) | Not done. Physics is a prototype |
+
+Build and serve a physics-only WebGL playtest:
+
+```bash
+# Unity menu: Pulse Arena > Build WebGL (Physics)  ->  PulseArenaGame/Builds/WebGL-Physics (git-ignored)
+node tools/ship-webgl.mjs --dir Builds/WebGL-Physics --port 8766
+```
+
 
 An original, mobile-first arcade challenge: tap the target in its lane before it expires, build combos, finish the run, replay.
 
