@@ -18,10 +18,13 @@ public static class PulseArenaBuild
     private const int PortraitWidth = 1080;
     private const int PortraitHeight = 1920;
 
-    // The first scene is the first screen. Match comes first because the link is for the match game (D18 item 3).
+    // The first scene is the first screen: the welcome screen, which asks for the mode. Match and Physics are the two modes it
+    // loads. Challenge stays in the list. Build Settings is not read here, so its order does not matter for this build.
     private static readonly string[] Scenes =
     {
+        "Assets/PulseArena/Scenes/Start.unity",
         "Assets/PulseArena/Scenes/Match.unity",
+        "Assets/PulseArena/Scenes/Physics.unity",
         "Assets/PulseArena/Scenes/Challenge.unity",
     };
 

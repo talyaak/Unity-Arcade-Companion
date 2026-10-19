@@ -731,3 +731,13 @@ namespace UnityEngine.UIElements
 {
     // Compile-only additions for the match result panel.
 }
+
+namespace UnityEngine.SceneManagement
+{
+    public static class SceneManager
+    {
+        public static void LoadScene(string sceneName)
+        {
+        }
+    }
+}

@@ -17,7 +17,9 @@ The earlier one-tap challenge game is kept as a prototype, with its own scene an
 
 ## Physics mode (prototype, D14)
 
-The same match rules with the tiles as rigid bodies in a pile. Scene `Assets/PulseArena/Scenes/Physics.unity`. It is not in Build Settings and not in the player menu yet.
+The same match rules with the tiles as rigid bodies in a pile. Scene `Assets/PulseArena/Scenes/Physics.unity`.
+
+The game opens on a welcome screen (`Assets/PulseArena/Scenes/Start.unity`, first in Build Settings). It asks for the mode: **Classic** (`Match`) or **Physics (prototype)** (`Physics`). This puts physics in the player menu, which D14 rule 1 and D16 kept out until a human playtest. The user decided this in chat; the architect should confirm it in `docs/DECISIONS.md`.
 
 | Area | Status |
 |---|---|

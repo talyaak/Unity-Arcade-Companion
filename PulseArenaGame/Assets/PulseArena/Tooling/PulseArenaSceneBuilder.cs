@@ -16,6 +16,8 @@ namespace PulseArena.Tooling
         private const string SceneFolder = "Assets/PulseArena/Scenes";
         private const string ScenePath = SceneFolder + "/Challenge.unity";
         private const string MatchScenePath = SceneFolder + "/Match.unity";
+        private const string PhysicsScenePath = SceneFolder + "/Physics.unity";
+        private const string StartScenePath = SceneFolder + "/Start.unity";
         private const string MaterialFolder = "Assets/PulseArena/Materials";
         private const string TileMaterialPath = MaterialFolder + "/Tile.mat";
         private const string UiFolder = "Assets/PulseArena/UI";
@@ -132,6 +134,34 @@ namespace PulseArena.Tooling
             Debug.Log($"Pulse Arena: built {MatchScenePath}.");
         }
 
+        // The welcome screen: the first scene in Build Settings, with the choice of mode (Classic or Physics).
+        [MenuItem("Pulse Arena/Build Start Scene")]
+        public static void BuildStart()
+        {
+            EnsureFolder(SceneFolder);
+
+            Scene scene = EditorSceneManager.NewScene(NewSceneSetup.DefaultGameObjects, NewSceneMode.Single);
+            var screen = new GameObject("Mode Select");
+            UIDocument document = screen.AddComponent<UIDocument>();
+            document.panelSettings = EnsurePanelSettings();
+            screen.AddComponent<ModeSelectScreen>();
+
+            Camera camera = Camera.main;
+            if (camera != null)
+            {
+                camera.clearFlags = CameraClearFlags.SolidColor;
+                camera.backgroundColor = new Color(0.07f, 0.1f, 0.13f, 1f);
+            }
+
+            EditorSceneManager.SaveScene(scene, StartScenePath);
+            AddToBuildSettings(StartScenePath, 0);
+            AddToBuildSettings(MatchScenePath);
+            AddToBuildSettings(PhysicsScenePath);
+            AssetDatabase.SaveAssets();
+
+            Debug.Log($"Pulse Arena: built {StartScenePath}. Build Settings starts with it.");
+        }
+
         // One PanelSettings for the match HUD. It scales with the screen and uses a 1080 x 1920 reference, so landscape and
         // portrait both fit. Created once and reused on later builds.
         private static PanelSettings EnsurePanelSettings()
@@ -186,6 +216,23 @@ namespace PulseArena.Tooling
             existing.CopyTo(updated, 0);
             updated[existing.Length] = new EditorBuildSettingsScene(path, true);
             EditorBuildSettings.scenes = updated;
+        }
+
+        // Puts the scene at the given position in Build Settings (0 is the first scene, the one that opens). Other scenes keep
+        // their order. A scene already in the list is moved to that position.
+        private static void AddToBuildSettings(string path, int index)
+        {
+            var list = new System.Collections.Generic.List<EditorBuildSettingsScene>();
+            foreach (EditorBuildSettingsScene s in EditorBuildSettings.scenes)
+            {
+                if (s.path != path)
+                {
+                    list.Add(s);
+                }
+            }
+
+            list.Insert(Mathf.Clamp(index, 0, list.Count), new EditorBuildSettingsScene(path, true));
+            EditorBuildSettings.scenes = list.ToArray();
         }
 
         private static void EnsureFolder(string path)
