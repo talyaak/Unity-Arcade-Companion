@@ -8,6 +8,8 @@ using UnityEngine;
 /// It builds the scenes in Scenes, in that order, to PulseArenaGame/Builds/WebGL (ignored by git). Build Settings is not read
 /// here, so its order stays as it is for the desktop builds (D18 item 3). Compression is off. The page is
 /// Assets/WebGLTemplates/PulseArena: a full-window canvas, portrait-sized by default.
+/// Pulse Arena > Build WebGL (Physics) builds only Physics.unity (D14, prototype) to PulseArenaGame/Builds/WebGL-Physics, a
+/// separate folder, so the match build is not overwritten while it is served. Not in Build Settings either.
 /// The class is in the global namespace so the -executeMethod name is exactly PulseArenaBuild.BuildWebGL, as D18 says.
 public static class PulseArenaBuild
 {
@@ -23,10 +25,29 @@ public static class PulseArenaBuild
         "Assets/PulseArena/Scenes/Challenge.unity",
     };
 
+    // Physics mode (D14) is a prototype outside Build Settings. Its own build and link, in its own folder, so the match
+    // build at OutputFolder is never touched while it is served.
+    private const string PhysicsOutputFolder = "Builds/WebGL-Physics";
+    private static readonly string[] PhysicsScenes =
+    {
+        "Assets/PulseArena/Scenes/Physics.unity",
+    };
+
     [MenuItem("Pulse Arena/Build WebGL")]
     public static void BuildWebGL()
     {
-        foreach (string scene in Scenes)
+        Build(Scenes, OutputFolder);
+    }
+
+    [MenuItem("Pulse Arena/Build WebGL (Physics)")]
+    public static void BuildWebGLPhysics()
+    {
+        Build(PhysicsScenes, PhysicsOutputFolder);
+    }
+
+    private static void Build(string[] scenes, string outputFolder)
+    {
+        foreach (string scene in scenes)
         {
             if (AssetDatabase.LoadAssetAtPath<SceneAsset>(scene) == null)
             {
@@ -50,10 +71,10 @@ public static class PulseArenaBuild
         PlayerSettings.defaultWebScreenWidth = PortraitWidth;
         PlayerSettings.defaultWebScreenHeight = PortraitHeight;
 
-        string outputPath = Path.GetFullPath(Path.Combine(Application.dataPath, "..", OutputFolder));
+        string outputPath = Path.GetFullPath(Path.Combine(Application.dataPath, "..", outputFolder));
         var options = new BuildPlayerOptions
         {
-            scenes = Scenes,
+            scenes = scenes,
             locationPathName = outputPath,
             target = BuildTarget.WebGL,
             targetGroup = BuildTargetGroup.WebGL,
@@ -63,7 +84,7 @@ public static class PulseArenaBuild
         BuildSummary summary = BuildPipeline.BuildPlayer(options).summary;
         bool succeeded = summary.result == BuildResult.Succeeded;
         string line = "[PulseArenaBuild] WebGL " + summary.result + ": " + summary.totalErrors + " errors, " +
-            summary.totalWarnings + " warnings, " + summary.totalSize + " bytes, scenes " + string.Join(", ", Scenes) +
+            summary.totalWarnings + " warnings, " + summary.totalSize + " bytes, scenes " + string.Join(", ", scenes) +
             ", output " + outputPath;
         if (succeeded)
         {

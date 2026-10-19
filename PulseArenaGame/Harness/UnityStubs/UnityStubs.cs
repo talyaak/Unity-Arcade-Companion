@@ -58,6 +58,10 @@ namespace UnityEngine
         public static void LogError(object message, Object context)
         {
         }
+
+        public static void Log(object message)
+        {
+        }
     }
 
     public sealed class CreateAssetMenuAttribute : Attribute
@@ -226,6 +230,7 @@ namespace UnityEngine
     public struct RaycastHit
     {
         public Collider collider;
+        public float distance;
     }
 
     public class Mesh : Object
@@ -405,6 +410,11 @@ namespace UnityEngine
         {
             hit = default(RaycastHit);
             return false;
+        }
+
+        public static int RaycastNonAlloc(Ray ray, RaycastHit[] results, float maxDistance)
+        {
+            return 0;
         }
     }
 

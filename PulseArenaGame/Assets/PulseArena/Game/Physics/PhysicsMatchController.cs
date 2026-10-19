@@ -57,6 +57,7 @@ namespace PulseArena.Game
         private const float HudBottomReserve = 0.1f;
         private const float HeadroomFraction = 0.2f;
         private const int FreeEvery = 3;                         // frames between free-set checks
+        private const float PickDistance = 100f;                 // how far a tap ray reaches
         private const float BodyGloss = 0.45f;                   // Standard shader smoothness, as in the grid game
         private const float EmblemGloss = 0.55f;
         private const float PlateGloss = 0.2f;
@@ -96,6 +97,7 @@ namespace PulseArena.Game
         private readonly List<int> _freeNow = new List<int>();
         private readonly List<Vector3> _fitPoints = new List<Vector3>();
         private readonly Collider[] _overlaps = new Collider[16];
+        private readonly RaycastHit[] _pickHits = new RaycastHit[16];   // reused by every tap, so a tap does not allocate
         private readonly GameObject[] _walls = new GameObject[4];
         private MatchLevelSpec _spec;
         private MatchBoard _board;
@@ -694,13 +696,31 @@ namespace PulseArena.Game
 
             Vector2 screen = pointer.position.ReadValue();
             Ray ray = Camera.main.ScreenPointToRay(new Vector3(screen.x, screen.y, 0f));
-            if (Physics.Raycast(ray, out RaycastHit hit))
+
+            // The walls and the floor have colliders but no tile. Take the nearest hit that is a tile, so an invisible wall in
+            // front of a tile does not swallow the tap.
+            TileView picked = null;
+            float nearest = float.MaxValue;
+            int count = Physics.RaycastNonAlloc(ray, _pickHits, PickDistance);
+            for (int i = 0; i < count; i++)
             {
+                RaycastHit hit = _pickHits[i];
+                if (hit.distance >= nearest)
+                {
+                    continue;
+                }
+
                 TileView view = hit.collider.GetComponent<TileView>();
                 if (view != null)
                 {
-                    Tap(view.TileId);
+                    picked = view;
+                    nearest = hit.distance;
                 }
+            }
+
+            if (picked != null)
+            {
+                Tap(picked.TileId);
             }
         }
 
